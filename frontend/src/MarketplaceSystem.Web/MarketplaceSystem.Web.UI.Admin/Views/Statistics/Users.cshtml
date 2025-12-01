@@ -1,0 +1,244 @@
+@{
+    ViewData["Title"] = "Thống kê người dùng";
+    var defaultFrom = ViewBag.DefaultFrom as string ?? DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd");
+    var defaultTo = ViewBag.DefaultTo as string ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-users"></i> Thống kê người dùng</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="exportUserStats">
+                <i class="fas fa-download"></i> Xuất báo cáo
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="printUserStats">
+                <i class="fas fa-print"></i> In báo cáo
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="userStatisticsError" class="alert alert-danger d-none" role="alert"></div>
+<div id="userStatisticsLoading" class="alert alert-info d-none" role="status">
+    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    Đang tải dữ liệu thống kê...
+</div>
+
+<!-- Time Range Filter -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form class="row g-3 align-items-end" id="userStatisticsFilter">
+            <div class="col-md-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="startDate" name="from" value="@defaultFrom" max="@defaultTo" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="endDate" name="to" value="@defaultTo" max="@defaultTo" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Khoảng thời gian</label>
+                <select class="form-select" id="quickRange">
+                    <option value="custom" selected>Tùy chỉnh</option>
+                    <option value="7">7 ngày</option>
+                    <option value="30">30 ngày</option>
+                    <option value="90">90 ngày</option>
+                    <option value="365">1 năm</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i> Áp dụng
+                </button>
+            </div>
+        </form>
+        <small class="text-muted d-block mt-2" id="userStatisticsMeta">
+            Dữ liệu sẽ được tự động tổng hợp theo ngày hoặc tháng dựa trên số lượng bản ghi.
+        </small>
+    </div>
+</div>
+
+<!-- Overview Statistics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Tổng người dùng
+                        </div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="totalUsersCount">--</div>
+                        <div class="small mt-1" id="totalUsersGrowth">--</div>
+                    </div>
+                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Đang hoạt động
+                        </div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="activeUsersCount">--</div>
+                        <div class="small text-muted" id="activeUsersPercent">--</div>
+                    </div>
+                    <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                </div>
+                <div class="small mt-2" id="activeUsersGrowth">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Người dùng mới (giai đoạn)
+                        </div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="newUsersThisMonth">--</div>
+                        <div class="small mt-1" id="newUsersChange">--</div>
+                    </div>
+                    <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Đang chờ xác thực / bị khóa
+                        </div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="pendingUsersCount">--</div>
+                        <div class="small mt-1 text-muted" id="lockedUsersCount">--</div>
+                    </div>
+                    <i class="fas fa-user-lock fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Tăng trưởng người dùng</h6>
+                <span class="badge bg-secondary" id="timelineMode">--</span>
+            </div>
+            <div class="card-body">
+                <canvas id="userGrowthChart" height="320"></canvas>
+                <div class="text-muted small mt-2" id="timelineNotes">
+                    Dữ liệu được tổng hợp theo ngày.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân bố trạng thái</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="320"></canvas>
+                <ul class="list-unstyled mt-3 mb-0 small">
+                    <li><strong>Đang hoạt động:</strong> <span id="statusActiveCount">--</span></li>
+                    <li><strong>Đã khóa:</strong> <span id="statusLockedCount">--</span></li>
+                    <li><strong>Chờ xác thực email:</strong> <span id="statusPendingCount">--</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Activity -->
+<div class="row mb-4">
+    <div class="col-xl-6">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3 d-flex justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Top người dùng tích cực</h6>
+                <span class="text-muted small" id="topActiveUsersTotal">--</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th class="text-center">Lượt xem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topActiveUsersBody">
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">Chưa có dữ liệu</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top khu vực</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="locationChart" height="280"></canvas>
+                <div class="mt-3" id="topLocationsList">
+                    <div class="text-muted small">Chưa có dữ liệu</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Demographics -->
+<div class="row mb-4">
+    <div class="col-xl-6">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân bố theo giới tính</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="genderChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân bố theo độ tuổi</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="ageChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.USER_STATISTICS_CONFIG = {
+            summaryEndpoint: '@Url.Action("GetUserSummary", "Statistics")',
+            defaultFrom: '@defaultFrom',
+            defaultTo: '@defaultTo'
+        };
+    </script>
+    <script src="~/js/admin/user-statistics.js" asp-append-version="true"></script>
+}

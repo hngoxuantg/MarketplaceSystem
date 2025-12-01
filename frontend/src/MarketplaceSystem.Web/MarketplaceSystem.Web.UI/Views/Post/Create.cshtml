@@ -1,0 +1,246 @@
+@model MarketplaceSystem.Web.UI.Models.ViewModels.Pages.PostPageViewModel
+@using MarketplaceSystem.Web.UI.Models.ViewModels.Category
+
+@{
+    ViewData["Title"] = "Đăng tin mới";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/post-create.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+}
+
+<div class="post-create container-lg">
+    <div class="post-create__header">
+        <div class="header-icon">
+            <i class="fas fa-bullhorn"></i>
+        </div>
+        <div class="header-content">
+            <h1>Đăng tin mới</h1>
+            <p><i class="fas fa-info-circle"></i> Thông tin càng chính xác, người mua càng tin tưởng</p>
+        </div>
+    </div>
+
+    <div class="post-card">
+        <div class="post-card__main">
+            <form asp-action="Create" asp-controller="Post" method="post" enctype="multipart/form-data" class="post-form" id="createPostForm">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input type="hidden" asp-for="Request.Post.CategoryId" id="categoryIdField" value="@Model.Request.Post.CategoryId" />
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Thông tin cơ bản</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Request.Post.Title">
+                            <i class="fas fa-heading"></i> Tiêu đề <span class="required">*</span>
+                        </label>
+                        <input asp-for="Request.Post.Title" class="form-control" placeholder="VD: iPhone 14 Pro Max 256GB màu đen còn bảo hành" />
+                        <span asp-validation-for="Request.Post.Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Request.Post.Description">
+                            <i class="fas fa-align-left"></i> Mô tả <span class="required">*</span>
+                        </label>
+                        <textarea asp-for="Request.Post.Description" class="form-control" rows="5"
+                            placeholder="Mô tả chi tiết sản phẩm: tính năng, đặc điểm, tình trạng, ..."></textarea>
+                        <span asp-validation-for="Request.Post.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Request.Post.Price">
+                            <i class="fas fa-tag"></i> Giá <span class="required">*</span>
+                        </label>
+                        <div class="price-input">
+                            <span class="price-icon"><i class="fas fa-dollar-sign"></i></span>
+                            <input asp-for="Request.Post.Price" class="form-control" type="number" min="1000" step="1000" />
+                            <span class="currency">đ</span>
+                        </div>
+                        <span asp-validation-for="Request.Post.Price" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Chi tiết sản phẩm</h3>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="Request.Post.Condition">
+                                <i class="fas fa-check-circle"></i> Tình trạng <span class="required">*</span>
+                            </label>
+                            <select asp-for="Request.Post.Condition" class="form-control" id="conditionSelect">
+                                <option value="">Chọn tình trạng</option>
+                                @if (Model.Condition != null)
+                                {
+                                    @foreach (var item in Model.Condition)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Request.Post.Condition" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label asp-for="Request.Post.Location">
+                                <i class="fas fa-map-marker-alt"></i> Tỉnh/Thành phố <span class="required">*</span>
+                            </label>
+                            <select asp-for="Request.Post.Location" class="form-control" id="provinceSelect">
+                                <option value="">Chọn tỉnh/thành phố</option>
+                                @if (Model.Location != null)
+                                {
+                                    @foreach (var item in Model.Location)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Request.Post.Location" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Attributes != null && Model.Attributes.Count > 0)
+                {
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-list-ul"></i>
+                            <h3>Thuộc tính bổ sung</h3>
+                        </div>
+
+                        <div id="additionalAttributes">
+                            @for (int i = 0; i < Model.Attributes.Count; i++)
+                            {
+                                var attr = Model.Attributes[i];
+                                <div class="form-group">
+                                    <label><i class="fas fa-cube"></i> @attr.DisplayName</label>
+
+                                    <input type="hidden"
+                                           name="Request.Post.AttributeValues[@i].CategoryAttributeId"
+                                           value="@attr.Id" />
+
+                                    @if (attr.AttributeType == AttributeType.Text)
+                                    {
+                                        <input type="text"
+                                               name="Request.Post.AttributeValues[@i].TextValue"
+                                               class="form-control"
+                                               placeholder="@attr.Placeholder" />
+                                        <span asp-validation-for="Request.Post.AttributeValues[@i].TextValue" class="text-danger"></span>
+                                    }
+                                    else if (attr.AttributeType == AttributeType.Number)
+                                    {
+                                        <input type="number"
+                                               name="Request.Post.AttributeValues[@i].NumberValue"
+                                               class="form-control" />
+                                        <span asp-validation-for="Request.Post.AttributeValues[@i].NumberValue" class="text-danger"></span>
+                                    }
+                                    else if (attr.AttributeType == AttributeType.Boolean)
+                                    {
+                                        <select name="Request.Post.AttributeValues[@i].BooleanValue" class="form-control">
+                                            <option value="true">Có</option>
+                                            <option value="false">Không</option>
+                                        </select>
+                                        <span asp-validation-for="Request.Post.AttributeValues[@i].BooleanValue" class="text-danger"></span>
+                                    }
+                                    else if (attr.AttributeType == AttributeType.Select)
+                                    {
+                                        <select name="Request.Post.AttributeValues[@i].SelectValues" class="form-control">
+                                            <option value="">Chọn @Model.Attributes[@i].DisplayName</option>
+                                            @foreach (var opt in attr.Options)
+                                            {
+                                                <option value="@opt.Value">@opt.DisplayText</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="Request.Post.AttributeValues[@i].SelectValues" class="text-danger"></span>
+                                    }
+                                    else if (attr.AttributeType == AttributeType.Date)
+                                    {
+                                        <input type="date" name="Request.Post.AttributeValues[@i].DateValue" class="form-control" />
+                                        <span asp-validation-for="Request.Post.AttributeValues[@i].DateValue" class="text-danger"></span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-images"></i>
+                        <h3>Hình ảnh sản phẩm</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-camera"></i> Hình ảnh <span class="required">*</span></label>
+                        <div class="image-upload">
+                            <div class="image-upload__preview" id="imagePreview"></div>
+                            <div class="image-upload__input">
+                                <input type="file" asp-for="Request.ImageViewModel.Images" multiple accept="image/*" class="form-control" id="imageInput" />
+                                <div class="image-upload__hint">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Kéo thả ảnh vào đây hoặc click để chọn ảnh</p>
+                                    <small>Tối đa 10 ảnh, mỗi ảnh tối đa 5MB</small>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Request.ImageViewModel.Images" class="text-danger"></span>
+                        <input type="hidden" asp-for="Request.ImageViewModel.IsMainIndex" id="mainImageIndex" value="0" />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Đăng tin
+                    </button>
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <aside class="post-card__sidebar">
+            <div class="sidebar-panel tips-panel">
+                <div class="panel-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Lưu ý khi đăng</h3>
+                <ul>
+                    <li><i class="fas fa-check"></i> Tiêu đề rõ ràng, không viết hoa toàn bộ.</li>
+                    <li><i class="fas fa-check"></i> Mô tả đầy đủ: tình trạng, bảo hành, khuyến mãi.</li>
+                    <li><i class="fas fa-check"></i> Ảnh rõ nét, tối đa 10 ảnh, mỗi ảnh ≤ 5MB.</li>
+                    <li><i class="fas fa-check"></i> Chọn đúng danh mục để tăng lượt xem.</li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-panel stats-panel">
+                <div class="stat-item">
+                    <i class="fas fa-eye"></i>
+                    <div>
+                        <span class="stat-label">Lượt xem trung bình</span>
+                        <span class="stat-value">2,500+</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <span class="stat-label">Thời gian duyệt</span>
+                        <span class="stat-value">24 giờ</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/post-create.js"></script>
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

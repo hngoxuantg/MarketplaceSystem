@@ -1,0 +1,156 @@
+﻿@model MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Categories.CreateCategoryViewModel
+
+@{
+    ViewData["Title"] = "Tạo danh mục mới";
+    var parentCategories = ViewBag.ParentCategories as List<MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Categories.CategoryViewModel> ?? new List<MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Categories.CategoryViewModel>();
+}
+
+<div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus"></i> Tạo danh mục mới</h1>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form asp-action="Create" method="post" id="createCategoryForm" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row">
+        <!-- Thông tin cơ bản -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info"></i> Thông tin cơ bản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="Name" class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" placeholder="VD: Điện thoại" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DisplayOrder" class="form-label">Thứ tự</label>
+                            <input asp-for="DisplayOrder" type="number" class="form-control" min="1" value="1" />
+                            <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả ngắn về danh mục"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IconFile" class="form-label">Icon (Hình ảnh)</label>
+                        <input asp-for="IconFile" type="file" class="form-control" accept="image/*" id="iconFileInput" />
+                        <small class="text-muted">
+                            Chọn file ảnh để làm icon cho danh mục (PNG, JPG, SVG...)
+                        </small>
+                        <div id="iconPreview" class="mt-2"></div>
+                        <span asp-validation-for="IconFile" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ParentCategoryId" class="form-label">Danh mục cha</label>
+                        <select asp-for="ParentCategoryId" class="form-select">
+                            <option value="">-- Danh mục gốc --</option>
+                            @foreach (var cat in parentCategories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                        <small class="text-muted">Bỏ trống nếu đây là danh mục gốc</small>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                        <label asp-for="IsActive" class="form-check-label">Kích hoạt danh mục</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Hướng dẫn</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li class="mb-2">Tên danh mục nên ngắn gọn, dễ hiểu</li>
+                        <li class="mb-2">Mô tả giúp người dùng biết danh mục chứa gì</li>
+                        <li class="mb-2">Upload hình ảnh để làm icon cho danh mục</li>
+                        <li>Có thể thêm thuộc tính ngay khi tạo hoặc sau này</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="fas fa-save"></i> Thao tác</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Tạo danh mục
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quản lý thuộc tính -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list-alt"></i> Thuộc tính danh mục (tùy chọn)</h5>
+            <button type="button" class="btn btn-sm btn-success" id="btnAddAttribute">
+                <i class="fas fa-plus"></i> Thêm thuộc tính
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Gợi ý:</strong> Thuộc tính giúp người dùng nhập thông tin cụ thể khi đăng bài. VD: Hãng xe, Năm sản xuất, v.v.
+            </div>
+            <div id="attributesContainer">
+                <div class="text-center text-muted py-4" id="emptyMessage">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>Chưa có thuộc tính nào. Click "Thêm thuộc tính" để bắt đầu.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/category-edit.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/admin/category-create.js"></script>
+}

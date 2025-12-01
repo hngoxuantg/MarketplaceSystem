@@ -1,0 +1,183 @@
+@model MarketplaceSystem.Web.UI.Models.ViewModels.Chat.ChatViewModel
+@{
+    ViewData["Title"] = "Tin nhắn";
+}
+
+<link rel="stylesheet" href="~/css/pages/chat.css" />
+
+<div class="chat-container">
+    <!-- Conversations List Sidebar -->
+    <div class="conversations-sidebar">
+        <div class="conversations-header">
+            <h4>Tin nhắn</h4>
+            <div class="search-box">
+                <input type="text" id="searchConversation" class="form-control" placeholder="Tìm kiếm...">
+            </div>
+        </div>
+
+        <div class="conversations-list" id="conversationsList">
+            @if (Model.Conversations.Any())
+            {
+                @foreach (var conversation in Model.Conversations)
+                {
+                    <div class="conversation-item" data-conversation-id="@conversation.ConversationId" data-user-id="@conversation.UserId">
+                        <div class="conversation-avatar">
+                            @if (!string.IsNullOrEmpty(conversation.UserAvatar))
+                            {
+                                <img src="@conversation.UserAvatar" alt="@conversation.UserName">
+                            }
+                            else
+                            {
+                                <div class="avatar-placeholder">@conversation.UserName.Substring(0, 1).ToUpper()</div>
+                            }
+                            @if (conversation.IsOnline)
+                            {
+                                <span class="online-indicator"></span>
+                            }
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-header-info">
+                                <h6 class="conversation-name">@conversation.UserName</h6>
+                                <span class="conversation-time">@conversation.TimeAgo</span>
+                            </div>
+                            <div class="conversation-preview">
+                                <p class="last-message">
+                                    @if (conversation.LastMessageType == "Image")
+                                    {
+                                        <i class="bi bi-image"></i> <span>Hình ảnh</span>
+                                    }
+                                    else
+                                    {
+                                        @conversation.LastMessage
+                                    }
+                                </p>
+                                @if (conversation.UnreadCount > 0)
+                                {
+                                    <span class="unread-badge">@conversation.UnreadCount</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-conversations">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>Chưa có cuộc trò chuyện nào</p>
+                </div>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="conversations-pagination">
+                <button class="btn btn-sm btn-outline-primary" id="loadMoreConversations" 
+                        data-page="@(Model.PageNumber + 1)" 
+                        @(Model.HasNextPage ? "" : "disabled")>
+                    Tải thêm
+                </button>
+            </div>
+        }
+    </div>
+
+    <!-- Chat Messages Area -->
+    <div class="chat-messages-area">
+        <div class="chat-placeholder">
+            <i class="bi bi-chat-text" style="font-size: 4rem; color: #6c757d; margin-bottom: 1rem;"></i>
+            <h5>Bắt đầu cuộc trò chuyện mới</h5>
+            <p class="text-muted">Chọn một cuộc trò chuyện từ danh sách bên trái hoặc tìm kiếm người dùng để bắt đầu nhắn tin</p>
+        </div>
+
+        <div class="chat-content" style="display: none;">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-user-info">
+                    <div class="chat-avatar">
+                        <div class="avatar-placeholder">U</div>
+                    </div>
+                    <div>
+                        <h6 class="chat-username">Username</h6>
+                        <span class="chat-status">Đang hoạt động</span>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="btn btn-sm btn-link" id="closeChatBtn">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messagesContainer">
+                <div class="messages-loading" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="messagesList"></div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-area">
+                <form id="messageForm">
+                    <input type="hidden" id="receiverId" name="receiverId" />
+                    <input type="hidden" id="currentConversationId" />
+                    
+                    <div class="input-group">
+                        <textarea id="messageContent" 
+                                  name="content" 
+                                  class="form-control" 
+                                  placeholder="Nhập tin nhắn..."
+                                  rows="1"></textarea>
+                        
+                        <button type="submit" class="btn btn-primary" id="sendMessageBtn">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SignalR Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    
+    <!-- Chat Scripts -->
+    <script src="~/js/chat-hub.js"></script>
+    <script src="~/js/chat-ui.js"></script>
+    
+    <script>
+        // Debug: Log model data
+        console.log("📊 Chat Page Model Data:");
+        console.table({
+            'Current User ID': @Model.CurrentUserId,
+            'Total Conversations': @Model.Conversations.Count,
+            'Total Count': @Model.TotalCount,
+            'Page Number': @Model.PageNumber,
+            'Page Size': @Model.PageSize,
+            'Total Pages': @Model.TotalPages
+        });
+        
+        @if (Model.Conversations.Any())
+        {
+            <text>
+            console.log("📋 Conversations List:");
+            console.log(@Html.Raw(Json.Serialize(Model.Conversations)));
+            </text>
+        }
+        else
+        {
+            <text>
+            console.warn("⚠️ No conversations found in Model");
+            </text>
+        }
+        
+        // Initialize chat with current user ID (currentUserId declared in chat-hub.js)
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeChat(@Model.CurrentUserId);
+        });
+    </script>
+}

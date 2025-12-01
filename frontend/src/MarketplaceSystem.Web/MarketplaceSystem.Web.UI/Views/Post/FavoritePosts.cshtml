@@ -1,0 +1,378 @@
+@{
+    ViewBag.Title = "Tin đã thích - Danh sách yêu thích";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/components/product-list.css" />
+    <link rel="stylesheet" href="~/css/pages/favorites.css" />
+}
+
+<div class="favorites-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="favorites-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div>
+                    <h1>Danh sách yêu thích</h1>
+                    <p>
+                        <i class="fas fa-bookmark"></i>
+                        Các tin đăng bạn đã lưu để xem lại
+                    </p>
+                </div>
+            </div>
+            <button class="btn-clear" onclick="clearAllFavorites()" style="display: none;">
+                <i class="fas fa-trash-alt"></i>
+                <span>Xóa tất cả</span>
+            </button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar" id="filterBar" style="display: none;">
+            <div class="filter-group">
+                <label>
+                    <i class="fas fa-sort"></i>
+                    Sắp xếp:
+                </label>
+                <select class="filter-select" id="sortSelect" onchange="applySorting()">
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="price-asc">Giá thấp đến cao</option>
+                    <option value="price-desc">Giá cao đến thấp</option>
+                </select>
+            </div>
+            
+            <div class="filter-stats">
+                <div class="stat-badge">
+                    <i class="fas fa-heart"></i>
+                    <span id="totalFavorites">0</span>
+                    <span>tin yêu thích</span>
+                </div>
+            </div>
+
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" onclick="setView('grid')" title="Xem dạng lưới">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-btn" data-view="list" onclick="setView('list')" title="Xem dạng danh sách">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingState" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Đang tải danh sách yêu thích...</p>
+        </div>
+
+        <!-- Products Container -->
+        <div class="products-container" id="productsContainer" style="display: none;">
+            <div class="products-grid" id="favoritesList"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-heart-broken"></i>
+            </div>
+            <h2>Chưa có tin yêu thích nào</h2>
+            <p>Hãy bắt đầu khám phá và lưu lại những tin đăng bạn quan tâm bằng cách nhấn vào icon trái tim trên mỗi tin</p>
+            <a href="@Url.Action("Index", "Home")" class="btn-explore">
+                <i class="fas fa-compass"></i>
+                <span>Khám phá ngay</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const favoritesList = document.getElementById('favoritesList');
+            const productsContainer = document.getElementById('productsContainer');
+            const filterBar = document.getElementById('filterBar');
+            const totalFavoritesEl = document.getElementById('totalFavorites');
+            const btnClear = document.querySelector('.btn-clear');
+            const sortSelect = document.getElementById('sortSelect');
+
+            let allProducts = [];
+            let currentView = 'grid';
+
+            async function loadFavorites() {
+                loadingState.style.display = 'flex';
+                emptyState.style.display = 'none';
+                productsContainer.style.display = 'none';
+                filterBar.style.display = 'none';
+                btnClear.style.display = 'none';
+                favoritesList.innerHTML = '';
+
+                try {
+                    // Try to get favorites from backend API first
+                    const apiResponse = await fetch('/Post/GetFavoritesFromApi');
+                    const apiResult = await apiResponse.json();
+                    
+                    console.log('API Response:', apiResult);
+
+                    let favorites = [];
+                    
+                    if (apiResult.useLocalStorage || !apiResult.success) {
+                        // Fallback to localStorage if not logged in or API fails
+                        console.log('Using localStorage fallback');
+                        const favoritesData = localStorage.getItem('favoriteProducts');
+                        const favoriteIds = favoritesData ? JSON.parse(favoritesData) : [];
+                        
+                        if (favoriteIds.length === 0) {
+                            loadingState.style.display = 'none';
+                            emptyState.style.display = 'flex';
+                            return;
+                        }
+
+                        // Fetch products by IDs
+                        const productPromises = favoriteIds.map(id => fetchProduct(id));
+                        const products = await Promise.all(productPromises);
+                        allProducts = products.filter(p => p !== null);
+                    } else {
+                        // Use backend API data
+                        console.log('Using backend API data');
+                        
+                        // API returns: { data: { data: [...products] } }
+                        const apiData = apiResult.data?.data || apiResult.data || [];
+                        allProducts = Array.isArray(apiData) ? apiData : [];
+                    }
+
+                    if (allProducts.length === 0) {
+                        loadingState.style.display = 'none';
+                        emptyState.style.display = 'flex';
+                        return;
+                    }
+
+                    // Update stats & show controls
+                    totalFavoritesEl.textContent = allProducts.length;
+                    filterBar.style.display = 'flex';
+                    btnClear.style.display = 'flex';
+
+                    // Render products
+                    renderProducts(allProducts);
+
+                    loadingState.style.display = 'none';
+                    productsContainer.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error loading favorites:', error);
+                    loadingState.style.display = 'none';
+                    emptyState.style.display = 'flex';
+                    if (window.Toast) {
+                        window.Toast.error('Không thể tải danh sách yêu thích');
+                    }
+                }
+            }
+
+            async function fetchProduct(id) {
+                try {
+                    const res = await fetch(`/Product/GetProductJson?id=${id}`);
+                    if (!res.ok) {
+                        console.error(`Failed to fetch product ${id}, status: ${res.status}`);
+                        return null;
+                    }
+                    const result = await res.json();
+                    console.log(`Fetched product ${id}:`, result);
+                    return result.success ? result.data : null;
+                } catch (error) {
+                    console.error(`Error fetching product ${id}:`, error);
+                    return null;
+                }
+            }
+
+            function renderProducts(products) {
+                favoritesList.innerHTML = '';
+                products.forEach(product => {
+                    favoritesList.appendChild(createProductCard(product));
+                });
+            }
+
+            function createProductCard(product) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.setAttribute('data-id', product.id);
+                card.setAttribute('data-price', product.price);
+                card.setAttribute('data-created', new Date(product.createdAt).getTime());
+
+                const isNew = (new Date() - new Date(product.createdAt)) < 3 * 24 * 60 * 60 * 1000;
+                
+                // Get main image or first image from images array
+                let imageUrl = '/images/no-image.png';
+                if (product.images?.images && product.images.images.length > 0) {
+                    const mainImage = product.images.images.find(img => img.isMain);
+                    imageUrl = mainImage ? mainImage.imageUrl : product.images.images[0].imageUrl;
+                }
+                
+                const price = new Intl.NumberFormat('vi-VN').format(product.price) + ' đ';
+                const timeAgo = formatTimeAgo(new Date(product.createdAt));
+
+                card.innerHTML = `
+                    <div class="product-image" onclick="window.location.href='/Product/Detail/${product.id}'">
+                        <img src="${imageUrl}" alt="${product.title}" loading="lazy" />
+                        ${isNew ? '<span class="badge badge-new">Mới</span>' : ''}
+                        <button class="btn-favorite active" onclick="event.stopPropagation(); removeFavorite(${product.id}, this)" title="Bỏ yêu thích">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-info" onclick="window.location.href='/Product/Detail/${product.id}'">
+                        <h3 class="product-title">${product.title}</h3>
+                        <div class="product-price">${price}</div>
+                        <div class="product-meta">
+                            <span class="product-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${product.location || 'Chưa có địa chỉ'}
+                            </span>
+                            <span class="product-time">
+                                <i class="far fa-clock"></i>
+                                ${timeAgo}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            function formatTimeAgo(date) {
+                const now = new Date();
+                const diff = now - date;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+
+                if (minutes < 1) return 'Vừa xong';
+                if (minutes < 60) return `${minutes} phút trước`;
+                if (hours < 24) return `${hours} giờ trước`;
+                if (days < 30) return `${days} ngày trước`;
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            window.applySorting = function() {
+                const sortValue = sortSelect.value;
+                const cards = Array.from(favoritesList.querySelectorAll('.product-card'));
+
+                cards.sort((a, b) => {
+                    switch(sortValue) {
+                        case 'newest':
+                            return parseInt(b.dataset.created) - parseInt(a.dataset.created);
+                        case 'oldest':
+                            return parseInt(a.dataset.created) - parseInt(b.dataset.created);
+                        case 'price-asc':
+                            return parseInt(a.dataset.price) - parseInt(b.dataset.price);
+                        case 'price-desc':
+                            return parseInt(b.dataset.price) - parseInt(a.dataset.price);
+                        default:
+                            return 0;
+                    }
+                });
+
+                favoritesList.innerHTML = '';
+                cards.forEach(card => favoritesList.appendChild(card));
+            };
+
+            window.setView = function(view) {
+                currentView = view;
+                
+                // Update buttons
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === view);
+                });
+
+                // Update container
+                favoritesList.className = view === 'grid' ? 'products-grid' : 'products-list';
+            };
+
+            window.removeFavorite = function(productId, button) {
+                // Remove from storage
+                const favoritesData = localStorage.getItem('favoriteProducts');
+                const favorites = favoritesData ? JSON.parse(favoritesData) : [];
+                const newFavorites = favorites.filter(id => id !== productId);
+                localStorage.setItem('favoriteProducts', JSON.stringify(newFavorites));
+
+                // Animate and remove card
+                const card = button.closest('.product-card');
+                if (card) {
+                    card.style.animation = 'fadeOutSlide 0.4s ease forwards';
+                    
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Update count
+                        const remaining = document.querySelectorAll('.product-card').length;
+                        totalFavoritesEl.textContent = remaining;
+
+                        // Show empty state if no products left
+                        if (remaining === 0) {
+                            productsContainer.style.display = 'none';
+                            filterBar.style.display = 'none';
+                            btnClear.style.display = 'none';
+                            emptyState.style.display = 'flex';
+                        }
+                    }, 400);
+                }
+
+                // Show toast
+                if (window.Toast) {
+                    window.Toast.info('Đã xóa khỏi danh sách yêu thích');
+                }
+
+                // Update UI sync
+                if (window.FavoritesManager) {
+                    window.FavoritesManager.syncUI();
+                }
+            };
+
+            window.clearAllFavorites = function() {
+                if (confirm('Bạn có chắc muốn xóa tất cả tin yêu thích?')) {
+                    localStorage.removeItem('favoriteProducts');
+                    
+                    productsContainer.style.display = 'none';
+                    filterBar.style.display = 'none';
+                    btnClear.style.display = 'none';
+                    emptyState.style.display = 'flex';
+                    favoritesList.innerHTML = '';
+                    
+                    if (window.Toast) {
+                        window.Toast.success('Đã xóa tất cả tin yêu thích');
+                    }
+
+                    if (window.FavoritesManager) {
+                        window.FavoritesManager.syncUI();
+                    }
+                }
+            };
+
+            // Load on page ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', loadFavorites);
+            } else {
+                loadFavorites();
+            }
+        })();
+    </script>
+
+    <style>
+        @@keyframes fadeOutSlide {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            50% {
+                transform: translateX(-10px) scale(0.95);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-30px) scale(0.9);
+            }
+        }
+    </style>
+}

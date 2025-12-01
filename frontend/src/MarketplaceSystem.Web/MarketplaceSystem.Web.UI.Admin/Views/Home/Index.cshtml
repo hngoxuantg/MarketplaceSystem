@@ -1,0 +1,382 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tachometer-alt"></i> Dashboard - Quản lý Rao vặt</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar"></i> Hôm nay
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar-week"></i> Tuần này
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar-alt"></i> Tháng này
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Bài đăng chờ duyệt
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="/Post/Pending" class="btn btn-sm btn-warning w-100">
+                        <i class="fas fa-eye"></i> Xem ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Bài đã duyệt (Tháng)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">245</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Người dùng mới (Tuần)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">48</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Báo cáo vi phạm
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">5</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-flag fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="/Report/Index" class="btn btn-sm btn-danger w-100">
+                        <i class="fas fa-exclamation-triangle"></i> Xử lý ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Posts Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Biểu đồ bài đăng</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow">
+                        <a class="dropdown-item" href="#">Xuất báo cáo</a>
+                        <a class="dropdown-item" href="#">Chi tiết</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="postsChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Danh mục phổ biến</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Pending Posts Table -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Bài đăng chờ duyệt gần đây</h6>
+                <a href="/Post/Pending" class="btn btn-sm btn-primary">
+                    Xem tất cả <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="80px">Ảnh</th>
+                                <th>Tiêu đề</th>
+                                <th>Người đăng</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Ngày đăng</th>
+                                <th width="200px">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Post" class="img-thumbnail"></td>
+                                <td>
+                                    <strong>iPhone 15 Pro Max 256GB</strong>
+                                    <br><small class="text-muted">Máy như mới, đầy đủ phụ kiện</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user-circle"></i> Nguyễn Văn A<br>
+                                    <small class="text-muted">0901234567</small>
+                                </td>
+                                <td><span class="badge bg-info">Điện thoại</span></td>
+                                <td><strong class="text-success">25,000,000 ₫</strong></td>
+                                <td>25/10/2025 14:30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" title="Duyệt">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Post" class="img-thumbnail"></td>
+                                <td>
+                                    <strong>Macbook Pro M3 16GB 512GB</strong>
+                                    <br><small class="text-muted">Bảo hành 1 năm, hỗ trợ trả góp</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user-circle"></i> Trần Thị B<br>
+                                    <small class="text-muted">0909876543</small>
+                                </td>
+                                <td><span class="badge bg-info">Laptop</span></td>
+                                <td><strong class="text-success">42,000,000 ₫</strong></td>
+                                <td>25/10/2025 13:15</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" title="Duyệt">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Post" class="img-thumbnail"></td>
+                                <td>
+                                    <strong>Honda SH 2023 màu đỏ</strong>
+                                    <br><small class="text-muted">Đi 5000km, còn mới tinh</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user-circle"></i> Lê Văn C<br>
+                                    <small class="text-muted">0912345678</small>
+                                </td>
+                                <td><span class="badge bg-info">Xe máy</span></td>
+                                <td><strong class="text-success">80,000,000 ₫</strong></td>
+                                <td>25/10/2025 11:45</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" title="Duyệt">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Post" class="img-thumbnail"></td>
+                                <td>
+                                    <strong>Cho thuê phòng trọ Q1</strong>
+                                    <br><small class="text-muted">Gần ĐH Kinh Tế, đầy đủ tiện nghi</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user-circle"></i> Phạm Thị D<br>
+                                    <small class="text-muted">0923456789</small>
+                                </td>
+                                <td><span class="badge bg-info">Nhà đất</span></td>
+                                <td><strong class="text-success">3,500,000 ₫/tháng</strong></td>
+                                <td>25/10/2025 10:20</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" title="Duyệt">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Post" class="img-thumbnail"></td>
+                                <td>
+                                    <strong>Tủ lạnh Toshiba 450L</strong>
+                                    <br><small class="text-muted">Còn bảo hành 6 tháng</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-user-circle"></i> Hoàng Văn E<br>
+                                    <small class="text-muted">0934567890</small>
+                                </td>
+                                <td><span class="badge bg-info">Đồ điện tử</span></td>
+                                <td><strong class="text-success">5,500,000 ₫</strong></td>
+                                <td>25/10/2025 09:30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" title="Duyệt">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i> Từ chối
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Posts Chart
+        const postsCtx = document.getElementById('postsChart').getContext('2d');
+        const postsChart = new Chart(postsCtx, {
+            type: 'line',
+            data: {
+                labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                datasets: [{
+                    label: 'Bài đăng đã duyệt',
+                    data: [120, 150, 180, 220, 200, 245, 270, 290, 310, 280, 300, 245],
+                    borderColor: 'rgb(28, 200, 138)',
+                    backgroundColor: 'rgba(28, 200, 138, 0.2)',
+                    tension: 0.4
+                }, {
+                    label: 'Bài đăng bị từ chối',
+                    data: [10, 15, 12, 18, 14, 20, 16, 22, 19, 17, 21, 15],
+                    borderColor: 'rgb(231, 74, 59)',
+                    backgroundColor: 'rgba(231, 74, 59, 0.2)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Điện thoại', 'Laptop', 'Xe máy', 'Nhà đất', 'Đồ điện tử', 'Khác'],
+                datasets: [{
+                    data: [25, 20, 18, 15, 12, 10],
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Approve/Reject handlers
+        // Approve Post Function
+        function approvePost(postId) {
+            if (confirm('Bạn có chắc muốn duyệt bài đăng này?')) {
+                // TODO: Gọi API để duyệt bài đăng
+                // fetch(`/Post/Approve/${postId}`, { method: 'POST' })
+                showNotification('Đã duyệt bài đăng!', 'success');
+                // Reload hoặc remove row
+                location.reload();
+            }
+        }
+
+        // Reject Post Function
+        function rejectPost(postId) {
+            const reason = prompt('Lý do từ chối:');
+            if (reason) {
+                // TODO: Gọi API để từ chối bài đăng
+                // fetch(`/Post/Reject/${postId}`, { 
+                //     method: 'POST',
+                //     body: JSON.stringify({ reason: reason })
+                // })
+                showNotification('Đã từ chối bài đăng!', 'warning');
+                // Reload hoặc remove row
+                location.reload();
+            }
+        }
+    </script>
+}

@@ -1,0 +1,415 @@
+@model MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Products.ProductDetailViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết bài đăng";
+    
+    var statusBadgeClass = Model.ProductStatus switch {
+        "Pending" => "bg-warning text-dark",
+        "Approved" => "bg-success",
+        "Rejected" => "bg-danger",
+        _ => "bg-secondary"
+    };
+    
+    var statusText = Model.ProductStatus switch {
+        "Pending" => "Chờ duyệt",
+        "Approved" => "Đã duyệt",
+        "Rejected" => "Đã từ chối",
+        _ => Model.ProductStatus
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/post-details.css" asp-append-version="true" />
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center pb-2 mb-4">
+    <div>
+        <h1 class="h2 mb-2">Chi tiết bài đăng #@Model.Id</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-action="All">Quản lý bài đăng</a></li>
+                <li class="breadcrumb-item active">Chi tiết</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <span class="badge @statusBadgeClass fs-6 px-3 py-2">@statusText</span>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Images Gallery -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Hình ảnh</h5>
+                @if (Model.ImageUrls != null && Model.ImageUrls.Any())
+                {
+                    <div class="product-gallery">
+                        <div class="main-image mb-3">
+                            <img src="@Model.ImageUrls.First()" alt="@Model.Title" class="img-fluid rounded" id="mainImage">
+                        </div>
+                        @if (Model.ImageUrls.Count > 1)
+                        {
+                            <div class="thumbnail-list">
+                                @foreach (var imageUrl in Model.ImageUrls)
+                                {
+                                    <div class="thumbnail-item @(imageUrl == Model.ImageUrls.First() ? "active" : "")" 
+                                         onclick="changeMainImage('@imageUrl')">
+                                        <img src="@imageUrl" alt="Thumbnail" class="img-fluid rounded">
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <p>Không có hình ảnh</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Thông tin sản phẩm</h5>
+                
+                <div class="info-group mb-3">
+                    <label class="info-label">Tiêu đề:</label>
+                    <div class="info-value">@Model.Title</div>
+                </div>
+
+                <div class="info-group mb-3">
+                    <label class="info-label">Mô tả:</label>
+                    <div class="info-value description-text">@Model.Description</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-group mb-3">
+                            <label class="info-label">Giá:</label>
+                            <div class="info-value text-danger fw-bold fs-5">@Model.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-group mb-3">
+                            <label class="info-label">Tình trạng:</label>
+                            <div class="info-value">@Model.Condition</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-group mb-3">
+                            <label class="info-label">Danh mục:</label>
+                            <div class="info-value">@Model.CategoryName</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-group mb-3">
+                            <label class="info-label">Địa điểm:</label>
+                            <div class="info-value">@Model.Location</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-group mb-3">
+                            <label class="info-label">Ngày tạo:</label>
+                            <div class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attributes -->
+        @if (Model.AttributeValues != null && Model.AttributeValues.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Thuộc tính</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                @foreach (var attr in Model.AttributeValues)
+                                {
+                                    <tr>
+                                        <td class="fw-bold" style="width: 40%;">@attr.AttributeName</td>
+                                        <td>@attr.DisplayValue</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Seller Info -->
+        @if (Model.Seller != null)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Người bán</h5>
+                    <div class="seller-info">
+                        <div class="text-center mb-3">
+                            @if (!string.IsNullOrEmpty(Model.Seller.AvatarUrl))
+                            {
+                                <img src="@Model.Seller.AvatarUrl" alt="@Model.Seller.DisplayName" 
+                                     class="rounded-circle seller-avatar mb-2">
+                            }
+                            else
+                            {
+                                <div class="seller-avatar-placeholder mb-2">
+                                    <span>@Model.Seller.DisplayName.Substring(0, 1).ToUpper()</span>
+                                </div>
+                            }
+                            <h6 class="mb-1">@Model.Seller.DisplayName</h6>
+                        </div>
+
+                        <div class="seller-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Số điện thoại:</span>
+                                <span class="stat-value">@(Model.Seller.PhoneNumber ?? "Chưa cập nhật")</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Tổng sản phẩm:</span>
+                                <span class="stat-value">@Model.Seller.TotalProducts</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Đã bán:</span>
+                                <span class="stat-value">@Model.Seller.TotalSold</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Thao tác</h5>
+                
+                @if (Model.ProductStatus == "Pending")
+                {
+                    <button type="button" class="btn btn-success w-100 mb-2" onclick="approvePost(@Model.Id)">
+                        Duyệt bài
+                    </button>
+                    <button type="button" class="btn btn-warning w-100 mb-2" onclick="showRejectModal(@Model.Id)">
+                        Từ chối
+                    </button>
+                }
+
+                <button type="button" class="btn btn-danger w-100" onclick="showDeleteModal(@Model.Id)">
+                    Xóa bài đăng
+                </button>
+
+                <hr>
+
+                <a asp-action="All" class="btn btn-secondary w-100">
+                    Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Từ chối bài đăng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="rejectReason" rows="4" 
+                              placeholder="Nhập lý do từ chối bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="confirmReject()">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận xóa bài đăng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Bạn có chắc chắn muốn xóa bài đăng này không? Hành động này không thể hoàn tác.</p>
+                <div class="mb-3">
+                    <label class="form-label">Lý do xóa <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="deleteReason" rows="3" 
+                              placeholder="Nhập lý do xóa bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Xóa bài đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPostId = @Model.Id;
+
+        // Change main image
+        function changeMainImage(imageUrl) {
+            document.getElementById('mainImage').src = imageUrl;
+            
+            // Update active thumbnail
+            document.querySelectorAll('.thumbnail-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // Approve post
+        async function approvePost(postId) {
+            if (!confirm('Bạn có chắc chắn muốn duyệt bài đăng này?')) return;
+
+            try {
+                const response = await fetch(`/Post/Approve/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ note: null })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Có lỗi xảy ra!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi duyệt bài đăng!');
+            }
+        }
+
+        // Show reject modal
+        function showRejectModal(postId) {
+            currentPostId = postId;
+            document.getElementById('rejectReason').value = '';
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        // Confirm reject
+        async function confirmReject() {
+            const reason = document.getElementById('rejectReason').value.trim();
+            
+            if (!reason) {
+                alert('Vui lòng nhập lý do từ chối!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Post/Reject/${currentPostId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                    alert(result.message);
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Có lỗi xảy ra!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi từ chối bài đăng!');
+            }
+        }
+
+        // Show delete modal
+        function showDeleteModal(postId) {
+            currentPostId = postId;
+            document.getElementById('deleteReason').value = '';
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            const reason = document.getElementById('deleteReason').value.trim();
+            
+            if (!reason) {
+                alert('Vui lòng nhập lý do xóa!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Post/Delete/${currentPostId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    alert(result.message);
+                    window.location.href = '/Post/All';
+                } else {
+                    alert(result.message || 'Có lỗi xảy ra!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa bài đăng!');
+            }
+        }
+    </script>
+}

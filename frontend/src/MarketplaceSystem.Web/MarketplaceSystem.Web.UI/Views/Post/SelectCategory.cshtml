@@ -1,0 +1,130 @@
+@model List<MarketplaceSystem.Web.UI.Models.ViewModels.Category.ListingCategoryViewModel>
+
+@{
+    ViewData["Title"] = "Chọn danh mục đăng tin";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/select-category.css" />
+}
+
+<div class="select-category-page">
+    <div class="container-lg">
+        <div class="select-category__header">
+            <h1>Bạn muốn đăng tin gì?</h1>
+            <p>Chọn danh mục phù hợp để bắt đầu đăng tin</p>
+        </div>
+
+        <!-- Danh mục cha -->
+        <div class="category-grid">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var category in Model.OrderBy(c => c.DisplayOrder))
+                {
+                    <div class="category-card" onclick="showSubcategories(@category.Id)">
+                        <div class="category-card__icon">
+                            @if (!string.IsNullOrEmpty(category.IconUrl))
+                            {
+                                <img src="@category.IconUrl" alt="@category.Name" />
+                            }
+                            else
+                            {
+                                <i class="fas fa-folder"></i>
+                            }
+                        </div>
+                        <div class="category-card__content">
+                            <h3 class="category-card__name">@category.Name</h3>
+                            <p class="category-card__description">@category.Description</p>
+                        </div>
+                        <div class="category-card__arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <!-- Render sẵn subcategories ẩn -->
+                        @if (category.Subcategories != null && category.Subcategories.Any())
+                        {
+                            <div class="subcategory-data" id="subcategory-data-@category.Id" style="display:none;">
+                                @foreach (var sub in category.Subcategories.OrderBy(s => s.DisplayOrder))
+                                {
+                                    <a href="@Url.Action("Create", "Post", new { categoryId = sub.Id })"
+                                       class="subcategory-item"
+                                       style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; text-decoration:none; color:#333; border-bottom:1px solid #eee;">
+
+                                        <div class="subcategory-item__left" style="display:flex; align-items:center; gap:10px;">
+                                            @if (sub.IconUrl != null)
+                                            {
+                                                <img src="@sub.IconUrl" alt="@sub.Name"
+                                                     style="width:24px; height:24px; object-fit:contain; border-radius:4px;" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-folder" style="font-size:20px;"></i>
+                                            }
+                                            <span class="subcategory-item__name" style="font-size:15px; font-weight:500;">@sub.Name</span>
+                                        </div>
+
+                                        <i class="fas fa-chevron-right" style="font-size:14px; color:#999;"></i>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-categories">
+                    <i class="fas fa-inbox"></i>
+                    <p>Hiện chưa có danh mục nào</p>
+                </div>
+            }
+        </div>
+
+        <!-- Modal hiển thị danh mục con -->
+        <div class="subcategory-modal" id="subcategoryModal" style="display:none;">
+            <div class="subcategory-modal__overlay" onclick="hideSubcategories()"></div>
+            <div class="subcategory-modal__content">
+                <div class="subcategory-modal__header">
+                    <button class="subcategory-modal__back" onclick="hideSubcategories()">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </button>
+                    <h2 id="subcategoryTitle">Chọn danh mục</h2>
+                </div>
+                <div class="subcategory-list" id="subcategoryList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showSubcategories(parentId) {
+            const modal = document.getElementById("subcategoryModal");
+            const subData = document.getElementById(`subcategory-data-${parentId}`);
+
+            if (subData) {
+                // Lấy tên danh mục cha
+                const categoryName = document.querySelector(
+                    `[onclick="showSubcategories(${parentId})"] .category-card__name`
+                )?.textContent || "Danh mục";
+
+                // Đổ dữ liệu danh mục con vào modal
+                document.getElementById("subcategoryTitle").textContent = categoryName;
+                document.getElementById("subcategoryList").innerHTML = subData.innerHTML;
+
+                modal.style.display = "flex";
+            } else {
+                // Không có danh mục con -> chuyển sang trang đăng tin
+                window.location.href = '@Url.Action("Create", "Post")' + '?categoryId=' + parentId;
+            }
+        }
+
+        function hideSubcategories() {
+            document.getElementById("subcategoryModal").style.display = "none";
+        }
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") hideSubcategories();
+        });
+    </script>
+}

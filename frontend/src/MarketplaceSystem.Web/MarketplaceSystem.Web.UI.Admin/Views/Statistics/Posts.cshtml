@@ -1,0 +1,230 @@
+@{
+    ViewData["Title"] = "Thống kê bài đăng";
+    var defaultFrom = ViewBag.DefaultFrom as string ?? DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd");
+    var defaultTo = ViewBag.DefaultTo as string ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-chart-line"></i> Thống kê bài đăng</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="exportPostStats">
+                <i class="fas fa-download"></i> Xuất báo cáo
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="printPostStats">
+                <i class="fas fa-print"></i> In báo cáo
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="postStatisticsError" class="alert alert-danger d-none" role="alert"></div>
+<div id="postStatisticsLoading" class="alert alert-info d-none" role="status">
+    <span class="spinner-border spinner-border-sm me-2"></span>
+    Đang tải dữ liệu thống kê...
+</div>
+
+<!-- Time Range Filter -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form class="row g-3 align-items-end" id="postStatisticsFilter">
+            <div class="col-md-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="postStartDate" name="from" value="@defaultFrom" max="@defaultTo" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="postEndDate" name="to" value="@defaultTo" max="@defaultTo" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Khoảng thời gian</label>
+                <select class="form-select" id="postQuickRange">
+                    <option value="custom" selected>Tùy chỉnh</option>
+                    <option value="7">7 ngày</option>
+                    <option value="30">30 ngày</option>
+                    <option value="90">90 ngày</option>
+                    <option value="365">1 năm</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Danh mục (ID)</label>
+                <input type="number" class="form-control" id="postCategoryFilter" min="1" placeholder="Tất cả" />
+            </div>
+            <div class="col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i> Áp dụng
+                </button>
+            </div>
+        </form>
+        <small class="text-muted d-block mt-2" id="postStatisticsMeta">
+            Dữ liệu được tổng hợp theo ngày (≤ 60 bản ghi) hoặc theo tháng (> 60 bản ghi) tùy theo khối lượng.
+        </small>
+    </div>
+</div>
+
+<!-- Overview Statistics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng bài đăng</div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="totalPostsCount">--</div>
+                    <div class="small mt-1" id="totalPostsGrowth">--</div>
+                </div>
+                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Đã duyệt</div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="approvedPostsCount">--</div>
+                    <div class="small text-muted" id="approvedPostsPercent">--</div>
+                </div>
+                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Chờ duyệt</div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="pendingPostsCount">--</div>
+                    <div class="small text-muted" id="pendingPostsPercent">--</div>
+                </div>
+                <i class="fas fa-clock fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Đã từ chối</div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="rejectedPostsCount">--</div>
+                    <div class="small text-muted" id="rejectedPostsPercent">--</div>
+                </div>
+                <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trend & Status -->
+<div class="row mb-4">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Xu hướng bài đăng</h6>
+                <span class="badge bg-secondary" id="postTimelineMode">--</span>
+            </div>
+            <div class="card-body">
+                <canvas id="postsTrendChart" height="320"></canvas>
+                <div class="text-muted small mt-2" id="postTimelineNotes">--</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4 h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân bố trạng thái</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="postStatusChart" height="320"></canvas>
+                <ul class="list-unstyled mt-3 mb-0 small">
+                    <li><strong>Đã duyệt:</strong> <span id="statusApprovedCount">--</span></li>
+                    <li><strong>Chờ duyệt:</strong> <span id="statusPendingCount">--</span></li>
+                    <li><strong>Đã từ chối:</strong> <span id="statusRejectedCount">--</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Statistics -->
+<div class="row mb-4">
+    <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Danh mục cha nổi bật</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="parentCategoryChart" height="300"></canvas>
+                <div class="mt-3" id="parentCategoryList">
+                    <div class="text-muted small">Chưa có dữ liệu</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top danh mục con</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Danh mục</th>
+                                <th class="text-center">Thuộc</th>
+                                <th class="text-center">Số bài</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topCategoriesBody">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Lượt xem trung bình/bài</div>
+                        <div class="h4 mb-0" id="averageViewsCurrent">--</div>
+                        <div class="small mt-1" id="averageViewsChange">--</div>
+                    </div>
+                    <i class="fas fa-eye fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card border-left-secondary shadow h-100">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Ghi chú</div>
+                <p class="mb-0 small text-muted">
+                    Báo cáo được tổng hợp từ API thống kê tổng quan bài đăng. Dữ liệu phản ánh lượt tạo mới và trạng thái duyệt trong giai đoạn đã chọn.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.POST_STATISTICS_CONFIG = {
+            summaryEndpoint: '@Url.Action("GetPostSummary", "Statistics")',
+            defaultFrom: '@defaultFrom',
+            defaultTo: '@defaultTo'
+        };
+    </script>
+    <script src="~/js/admin/post-statistics.js" asp-append-version="true"></script>
+}
+
+

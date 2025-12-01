@@ -1,0 +1,221 @@
+﻿@model MarketplaceSystem.Web.UI.Models.ViewModels.Auth.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="brand-title">Tham gia ngay!</h1>
+                <p class="brand-subtitle">Trở thành thành viên của cộng đồng mua bán lớn nhất</p>
+                <div class="brand-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Đăng tin miễn phí không giới hạn</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Quản lý tin đăng dễ dàng</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Kết nối với hàng triệu người mua</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Register Form -->
+        <div class="auth-form-container">
+            <div class="auth-form-wrapper">
+                <div class="auth-header">
+                    <h2 class="auth-title">Đăng ký tài khoản</h2>
+                    <p class="auth-subtitle">Tạo tài khoản mới để bắt đầu</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        @ViewBag.Error
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="Register" asp-controller="Auth" method="post" class="auth-form">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="FullName" class="form-label">
+                            <i class="fas fa-user"></i>
+                            Họ và tên
+                        </label>
+                        <input asp-for="FullName"
+                               class="form-control form-control-lg"
+                               placeholder="Nhập họ và tên của bạn"
+                               autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger small d-block mt-2"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </label>
+                        <input asp-for="Email"
+                               class="form-control form-control-lg"
+                               placeholder="example@email.com"
+                               autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger small d-block mt-2"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Location" class="form-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Thành phố
+                        </label>
+                        <select asp-for="Location" class="form-select form-select-lg">
+                            <option value="">-- Chọn thành phố --</option>
+                            @foreach (var loc in ViewBag.Locations)
+                            {
+                                <option value="@loc.Id">@loc.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Location" class="text-danger small d-block mt-2"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Mật khẩu
+                            </label>
+                            <div class="password-input-wrapper">
+                                <input asp-for="Password"
+                                       type="password"
+                                       class="form-control form-control-lg"
+                                       id="passwordInput"
+                                       placeholder="Nhập mật khẩu"
+                                       autocomplete="new-password" />
+                                <button type="button" class="password-toggle" onclick="togglePassword('passwordInput', 'toggleIcon1')">
+                                    <i class="fas fa-eye" id="toggleIcon1"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small d-block mt-2"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Xác nhận mật khẩu
+                            </label>
+                            <div class="password-input-wrapper">
+                                <input asp-for="ConfirmPassword"
+                                       type="password"
+                                       class="form-control form-control-lg"
+                                       id="confirmPasswordInput"
+                                       placeholder="Nhập lại mật khẩu"
+                                       autocomplete="new-password" />
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPasswordInput', 'toggleIcon2')">
+                                    <i class="fas fa-eye" id="toggleIcon2"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-2"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DateOfBirth" class="form-label">
+                                <i class="fas fa-calendar"></i>
+                                Ngày sinh
+                            </label>
+                            <input asp-for="DateOfBirth"
+                                   type="date"
+                                   class="form-control form-control-lg"
+                                   autocomplete="bday" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small d-block mt-2"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Gender" class="form-label">
+                                <i class="fas fa-venus-mars"></i>
+                                Giới tính
+                            </label>
+                            <select asp-for="Gender" class="form-select form-select-lg">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="Male">Nam</option>
+                                <option value="Female">Nữ</option>
+                                <option value="Other">Khác</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small d-block mt-2"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            Tôi đồng ý với <a asp-controller="Home" asp-action="Terms" target="_blank">Điều khoản dịch vụ</a> và <a asp-controller="Home" asp-action="Privacy" target="_blank">Chính sách bảo mật</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Đăng ký
+                    </button>
+
+                    <div class="auth-footer">s
+                        <p>
+                            Đã có tài khoản?
+                            <a asp-controller="Auth" asp-action="Login" class="auth-link">
+                                Đăng nhập ngay
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Form submission handling
+        document.querySelector('.auth-form').addEventListener('submit', function(e) {
+            const agreeTerms = document.getElementById('agreeTerms');
+            if (!agreeTerms.checked) {
+                e.preventDefault();
+                alert('Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật!');
+                return false;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+        });
+    </script>
+}

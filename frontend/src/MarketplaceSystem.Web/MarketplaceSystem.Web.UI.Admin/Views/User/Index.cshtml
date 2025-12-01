@@ -1,0 +1,332 @@
+@model MarketplaceSystem.Web.UI.Admin.Models.ApiResponses.PaginatedResponse<MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Users.UserListViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var pageSize = ViewBag.PageSize ?? 12;
+    var search = ViewBag.Search as string;
+    var status = ViewBag.Status as int?;
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-users"></i> Quản lý người dùng</h1>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Statistics Cards -->
+@if (Model != null && Model.Data != null)
+{
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Tổng người dùng</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.TotalCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Đang hoạt động</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.Data.Count(u => u.Status == "Active")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-start border-danger border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Bị khóa</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.Data.Count(u => u.Status == "Locked")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-lock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Tên hoặc email..." value="@search">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Trạng thái</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Tất cả</option>
+                        <option value="1" selected="@(status == 1)">Hoạt động</option>
+                        <option value="2" selected="@(status == 2)">Bị khóa</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label">Hiển thị</label>
+                    <select class="form-select" id="pageSize" name="pageSize">
+                        <option value="12" selected="@(pageSize == 12)">12</option>
+                        <option value="24" selected="@(pageSize == 24)">24</option>
+                        <option value="48" selected="@(pageSize == 48)">48</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Đặt lại
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card shadow-sm">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách người dùng</h6>
+    </div>
+    <div class="card-body">
+        @if (Model != null && Model.Data != null && Model.Data.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Người dùng</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Thống kê bài viết</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Data)
+                        {
+                            <tr>
+                                <td>@user.Id</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(user.Avatar))
+                                        {
+                                            <img src="@user.Avatar" alt="@user.FullName" 
+                                                 class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <strong>@user.FullName</strong>
+                                            @if (user.IsEmailConfirmed)
+                                            {
+                                                <i class="fas fa-check-circle text-success" title="Email đã xác thực"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>@(user.PhoneNumber ?? "N/A")</td>
+                                <td>
+                                    <small>
+                                        <span class="badge bg-warning text-dark">Chờ: @user.PostStats.Pending</span>
+                                        <span class="badge bg-success">Duyệt: @user.PostStats.Approved</span>
+                                        <span class="badge bg-danger">Từ chối: @user.PostStats.Rejected</span>
+                                        <br>
+                                        <span class="badge bg-info">Tổng: @user.PostStats.Total</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>@user.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td>
+                                    @if (user.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-lock"></i> Bị khóa
+                                        </span>
+                                        @if (user.LockoutEnd.HasValue)
+                                        {
+                                            <br><small class="text-muted">Đến: @user.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                        }
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("Details", new { id = user.Id })" 
+                                       class="btn btn-sm btn-info" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (user.Status == "Active")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-warning btn-lock-user" 
+                                                data-user-id="@user.Id" 
+                                                data-user-name="@user.FullName"
+                                                title="Khóa tài khoản">
+                                            <i class="fas fa-lock"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success btn-unlock-user" 
+                                                data-user-id="@user.Id" 
+                                                data-user-name="@user.FullName"
+                                                title="Mở khóa">
+                                            <i class="fas fa-unlock"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="User pagination" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pageNumber = currentPage - 1, pageSize, search, status })">
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, pageSize, search, status })">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pageNumber = currentPage + 1, pageSize, search, status })">
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="text-center text-muted">
+                    <small>Hiển thị @((currentPage - 1) * pageSize + 1) - @Math.Min(currentPage * pageSize, Model.TotalCount) trong tổng số @Model.TotalCount người dùng</small>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Không tìm thấy người dùng nào</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Lock User Modal -->
+<div class="modal fade" id="lockUserModal" tabindex="-1" aria-labelledby="lockUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lockUserModalLabel">
+                    <i class="fas fa-lock"></i> Khóa tài khoản người dùng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn khóa tài khoản <strong id="lockUserName"></strong>?</p>
+                <input type="hidden" id="lockUserId">
+                <div class="mb-3">
+                    <label for="lockUntilDate" class="form-label">Khóa đến ngày:</label>
+                    <input type="datetime-local" class="form-control" id="lockUntilDate" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" id="confirmLockBtn">
+                    <i class="fas fa-lock"></i> Khóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unlock User Modal -->
+<div class="modal fade" id="unlockUserModal" tabindex="-1" aria-labelledby="unlockUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlockUserModalLabel">
+                    <i class="fas fa-unlock"></i> Mở khóa tài khoản
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn mở khóa tài khoản <strong id="unlockUserName"></strong>?</p>
+                <input type="hidden" id="unlockUserId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" id="confirmUnlockBtn">
+                    <i class="fas fa-unlock"></i> Mở khóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-management.js"></script>
+}

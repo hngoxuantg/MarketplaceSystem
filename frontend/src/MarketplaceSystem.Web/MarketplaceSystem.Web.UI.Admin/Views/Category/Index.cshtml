@@ -1,0 +1,163 @@
+@model MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Categories.CategoryIndexViewModel
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tags"></i> Quản lý danh mục</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm danh mục mới
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Tổng danh mục</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800" id="totalCategories">@Model.TotalCategories</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-folder fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Đang hoạt động</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800" id="activeCategories">@Model.ActiveCategories</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-start border-warning border-4 shadow-sm h-100 py-2">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Tạm dừng</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800" id="inactiveCategories">@Model.InactiveCategories</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-pause-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-start border-info border-4 shadow-sm h-100 py-2">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Danh mục con</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800" id="totalPosts">@Model.TotalPosts</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form id="filterForm" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+                       placeholder="Tên danh mục..." value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="isActive" name="isActive">
+                    <option value="">Tất cả</option>
+                    <option value="true" selected="@(Model.IsActive == true)">Hoạt động</option>
+                    <option value="false" selected="@(Model.IsActive == false)">Tạm dừng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Số dòng</label>
+                <select class="form-select" id="pageSize" name="pageSize">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnResetFilter">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Categories Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h6 class="m-0 fw-bold text-primary">Danh sách danh mục</h6>
+    </div>
+    <div class="card-body p-0">
+        <div id="categoriesTableContainer">
+            @await Html.PartialAsync("_CategoriesTablePartial", Model)
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/category-index.css" />
+}
+
+@section Scripts {
+    <script src="~/js/admin/category-index.js"></script>
+}

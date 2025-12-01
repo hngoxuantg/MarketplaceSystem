@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\DataSeedingServices\StorageServices\**" />
+    <Compile Remove="Data\DataSeedingServices\TokenServices\**" />
+    <EmbeddedResource Remove="Data\DataSeedingServices\StorageServices\**" />
+    <EmbeddedResource Remove="Data\DataSeedingServices\TokenServices\**" />
+    <None Remove="Data\DataSeedingServices\StorageServices\**" />
+    <None Remove="Data\DataSeedingServices\TokenServices\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MarketplaceSystem.Application\MarketplaceSystem.Application.csproj" />
+    <ProjectReference Include="..\MarketplaceSystem.Common\MarketplaceSystem.Common.csproj" />
+    <ProjectReference Include="..\MarketplaceSystem.Domain\MarketplaceSystem.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
+</Project>

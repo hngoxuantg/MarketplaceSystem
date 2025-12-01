@@ -1,0 +1,153 @@
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus"></i> Thêm sản phẩm mới</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Thông tin sản phẩm</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="productName" name="productName" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                <option value="1">Điện thoại</option>
+                                <option value="2">Laptop</option>
+                                <option value="3">Tablet</option>
+                                <option value="4">Phụ kiện</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="brand" class="form-label">Thương hiệu</label>
+                            <input type="text" class="form-control" id="brand" name="brand">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="price" class="form-label">Giá (₫) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="price" name="price" min="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="discount" class="form-label">Giảm giá (%)</label>
+                            <input type="number" class="form-control" id="discount" name="discount" min="0" max="100" value="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả ngắn</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fullDescription" class="form-label">Mô tả chi tiết</label>
+                        <textarea class="form-control" id="fullDescription" name="fullDescription" rows="6"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="specifications" class="form-label">Thông số kỹ thuật</label>
+                        <textarea class="form-control" id="specifications" name="specifications" rows="4" placeholder="Màn hình: 6.7 inch&#10;RAM: 8GB&#10;Bộ nhớ: 256GB"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Hình ảnh sản phẩm</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+                        <small class="text-muted">Có thể chọn nhiều ảnh. Ảnh đầu tiên sẽ là ảnh chính.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                            <label class="form-check-label" for="featured">
+                                Sản phẩm nổi bật
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="active" name="active" checked>
+                            <label class="form-check-label" for="active">
+                                Hiển thị trên website
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Lưu sản phẩm
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Hướng dẫn</h6>
+            </div>
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle text-info"></i> Lưu ý khi thêm sản phẩm:</h6>
+                <ul class="small">
+                    <li>Tên sản phẩm nên rõ ràng, đầy đủ</li>
+                    <li>Giá và số lượng phải lớn hơn 0</li>
+                    <li>Hình ảnh nên có kích thước tối thiểu 800x800px</li>
+                    <li>Mô tả chi tiết giúp khách hàng hiểu rõ sản phẩm</li>
+                    <li>Thông số kỹ thuật viết mỗi thông số một dòng</li>
+                </ul>
+
+                <h6 class="mt-3"><i class="fas fa-lightbulb text-warning"></i> Mẹo:</h6>
+                <ul class="small">
+                    <li>Sử dụng ảnh chất lượng cao, rõ nét</li>
+                    <li>Thêm nhiều ảnh từ các góc độ khác nhau</li>
+                    <li>Mô tả đầy đủ ưu điểm của sản phẩm</li>
+                    <li>Kiểm tra lại thông tin trước khi lưu</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Preview images before upload
+        document.getElementById('images').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                console.log(`Đã chọn ${files.length} ảnh`);
+            }
+        });
+
+        // Format price input
+        document.getElementById('price').addEventListener('blur', function(e) {
+            const value = parseInt(e.target.value);
+            if (!isNaN(value)) {
+                console.log(`Giá: ${value.toLocaleString('vi-VN')} ₫`);
+            }
+        });
+    </script>
+}

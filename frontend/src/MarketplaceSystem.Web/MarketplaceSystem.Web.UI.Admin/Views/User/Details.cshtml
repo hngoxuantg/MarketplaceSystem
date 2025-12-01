@@ -1,0 +1,264 @@
+@model MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Users.UserDetailViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-user"></i> Chi tiết người dùng</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- User Info Card -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(Model.Avatar))
+                {
+                    <img src="@Model.Avatar" alt="@Model.FullName" 
+                         class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" 
+                         style="width: 150px; height: 150px; font-size: 48px;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                }
+                
+                <h4 class="mb-1">@Model.FullName</h4>
+                
+                @if (Model.Status == "Active")
+                {
+                    <span class="badge bg-success mb-3">
+                        <i class="fas fa-check-circle"></i> Hoạt động
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger mb-3">
+                        <i class="fas fa-lock"></i> Bị khóa
+                    </span>
+                    @if (Model.LockoutEnd.HasValue)
+                    {
+                        <p class="text-muted small">Khóa đến: @Model.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                    }
+                }
+
+                <div class="mb-3">
+                    @if (Model.Status == "Active")
+                    {
+                        <button type="button" class="btn btn-warning btn-lock-user" 
+                                data-user-id="@Model.Id" 
+                                data-user-name="@Model.FullName">
+                            <i class="fas fa-lock"></i> Khóa tài khoản
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success btn-unlock-user" 
+                                data-user-id="@Model.Id" 
+                                data-user-name="@Model.FullName">
+                            <i class="fas fa-unlock"></i> Mở khóa
+                        </button>
+                    }
+                </div>
+
+                <hr>
+
+                <div class="text-start">
+                    <p class="mb-2">
+                        <i class="fas fa-envelope text-primary"></i>
+                        <strong>Email:</strong><br>
+                        <small>@Model.Email</small>
+                        @if (Model.IsEmailConfirmed)
+                        {
+                            <i class="fas fa-check-circle text-success" title="Đã xác thực"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-times-circle text-danger" title="Chưa xác thực"></i>
+                        }
+                    </p>
+                    
+                    <p class="mb-2">
+                        <i class="fas fa-phone text-primary"></i>
+                        <strong>Số điện thoại:</strong><br>
+                        <small>@(Model.PhoneNumber ?? "Chưa cập nhật")</small>
+                    </p>
+                    
+                    <p class="mb-0">
+                        <i class="fas fa-calendar text-primary"></i>
+                        <strong>Ngày tạo:</strong><br>
+                        <small>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics & Details -->
+    <div class="col-md-8">
+        <!-- Post Statistics -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-bar"></i> Thống kê bài viết
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="border-start border-warning border-4 p-3">
+                            <h3 class="text-warning">@Model.PostStats.Pending</h3>
+                            <small class="text-muted">Chờ duyệt</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-start border-success border-4 p-3">
+                            <h3 class="text-success">@Model.PostStats.Approved</h3>
+                            <small class="text-muted">Đã duyệt</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-start border-danger border-4 p-3">
+                            <h3 class="text-danger">@Model.PostStats.Rejected</h3>
+                            <small class="text-muted">Từ chối</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-start border-info border-4 p-3">
+                            <h3 class="text-info">@Model.PostStats.Total</h3>
+                            <small class="text-muted">Tổng cộng</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User ID -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle"></i> Thông tin hệ thống
+                </h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td><strong>User ID:</strong></td>
+                            <td>@Model.Id</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trạng thái email:</strong></td>
+                            <td>
+                                @if (Model.IsEmailConfirmed)
+                                {
+                                    <span class="badge bg-success">Đã xác thực</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Chưa xác thực</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ngày tham gia:</strong></td>
+                            <td>@Model.CreatedAt.ToString("dddd, dd/MM/yyyy HH:mm:ss")</td>
+                        </tr>
+                        @if (Model.LockoutEnd.HasValue)
+                        {
+                            <tr>
+                                <td><strong>Thời gian khóa:</strong></td>
+                                <td>
+                                    <span class="text-danger">
+                                        Đến @Model.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lock User Modal -->
+<div class="modal fade" id="lockUserModal" tabindex="-1" aria-labelledby="lockUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lockUserModalLabel">
+                    <i class="fas fa-lock"></i> Khóa tài khoản người dùng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn khóa tài khoản <strong id="lockUserName"></strong>?</p>
+                <input type="hidden" id="lockUserId">
+                <div class="mb-3">
+                    <label for="lockUntilDate" class="form-label">Khóa đến ngày:</label>
+                    <input type="datetime-local" class="form-control" id="lockUntilDate" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" id="confirmLockBtn">
+                    <i class="fas fa-lock"></i> Khóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unlock User Modal -->
+<div class="modal fade" id="unlockUserModal" tabindex="-1" aria-labelledby="unlockUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlockUserModalLabel">
+                    <i class="fas fa-unlock"></i> Mở khóa tài khoản
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn mở khóa tài khoản <strong id="unlockUserName"></strong>?</p>
+                <input type="hidden" id="unlockUserId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" id="confirmUnlockBtn">
+                    <i class="fas fa-unlock"></i> Mở khóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-management.js"></script>
+}

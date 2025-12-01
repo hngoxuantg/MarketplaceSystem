@@ -1,0 +1,251 @@
+/* Category Index Styles */
+
+/* Statistics Cards */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-overlay .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Table Styles */
+.table thead th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.category-icon-img {
+    border: 1px solid #dee2e6;
+}
+
+/* Button Groups */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+/* Badges */
+.badge {
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.page-link {
+    color: #4e73df;
+    border-color: #dee2e6;
+}
+
+.page-link:hover {
+    color: #2e59d9;
+    background-color: #eaecf4;
+    border-color: #dee2e6;
+}
+
+.page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.page-item.disabled .page-link {
+    color: #858796;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Filter Form */
+#filterForm .form-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+#filterForm .form-control,
+#filterForm .form-select {
+    font-size: 0.9rem;
+}
+
+/* Modal Styles */
+.modal-header {
+    background-color: #4e73df;
+    color: white;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+}
+
+/* Card Header */
+.card-header {
+    border-bottom: 2px solid #e3e6f0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10000;
+}
+
+.toast {
+    min-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-toolbar {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .btn-toolbar .btn {
+        width: 100%;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .card-body .row .col-md-3,
+    .card-body .row .col-md-4 {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state i {
+    color: #d1d3e2;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #858796;
+    font-size: 1.1rem;
+}
+
+/* Border Colors for Statistics Cards */
+.border-primary {
+    border-color: #4e73df !important;
+}
+
+.border-success {
+    border-color: #1cc88a !important;
+}
+
+.border-warning {
+    border-color: #f6c23e !important;
+}
+
+.border-info {
+    border-color: #36b9cc !important;
+}
+
+/* Icon Hover Effects */
+.table tbody tr button i {
+    transition: transform 0.2s;
+}
+
+.table tbody tr button:hover i {
+    transform: scale(1.2);
+}

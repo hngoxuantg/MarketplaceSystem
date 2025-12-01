@@ -1,0 +1,437 @@
+@using MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Products
+@using MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Categories
+@using MarketplaceSystem.Web.UI.Admin.Models.ViewModel.Shared
+@using MarketplaceSystem.Web.UI.Admin.Models.ApiResponses
+
+@{
+    var products = ViewBag.Products as PaginatedResponse<ProductListViewModel>;
+    var categories = ViewBag.Categories as List<CategoryViewModel>;
+    var sortOptions = ViewBag.SortOptions as List<SortOption>;
+    var filter = ViewBag.Filter as ProductFilterViewModel;
+    
+    var currentTab = ViewContext.RouteData.Values["action"]?.ToString() ?? "Pending";
+    var tabTitle = currentTab switch {
+        "Pending" => "Chờ duyệt",
+        "Approved" => "Đã duyệt",
+        "Rejected" => "Đã từ chối",
+        "All" => "Tất cả bài đăng",
+        _ => "Bài đăng"
+    };
+    
+    var tabIcon = currentTab switch {
+        "Pending" => "fa-clock text-warning",
+        "Approved" => "fa-check-circle text-success",
+        "Rejected" => "fa-times-circle text-danger",
+        "All" => "fa-list",
+        _ => "fa-file"
+    };
+    
+    ViewData["Title"] = tabTitle;
+}
+
+<!-- Header with Tabs -->
+<div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas @tabIcon"></i> @tabTitle
+        @if (products != null)
+        {
+            <span class="badge bg-secondary">@products.TotalCount</span>
+        }
+    </h1>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(currentTab == "Pending" ? "active" : "")" asp-action="Pending">
+            <i class="fas fa-clock text-warning"></i> Chờ duyệt
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(currentTab == "Approved" ? "active" : "")" asp-action="Approved">
+            <i class="fas fa-check-circle text-success"></i> Đã duyệt
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(currentTab == "Rejected" ? "active" : "")" asp-action="Rejected">
+            <i class="fas fa-times-circle text-danger"></i> Đã từ chối
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(currentTab == "All" ? "active" : "")" asp-action="All">
+            <i class="fas fa-list"></i> Tất cả
+        </a>
+    </li>
+</ul>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filter Form -->
+<form method="get" asp-action="@currentTab" id="filterForm">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-search"></i> Tìm kiếm</label>
+                    <input type="text" name="Search" class="form-control" placeholder="Nhập từ khóa..." 
+                           value="@filter?.Search" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-tag"></i> Danh mục</label>
+                    <select name="CategoryId" class="form-select">
+                        <option value="">-- Tất cả danh mục --</option>
+                        @if (categories != null)
+                        {
+                            @foreach (var cat in categories)
+                            {
+                                <option value="@cat.Id" selected="@(filter?.CategoryId == cat.Id)">
+                                    @cat.Name
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-sort"></i> Sắp xếp</label>
+                    <select name="SortBy" class="form-select">
+                        <option value="">-- Mặc định --</option>
+                        @if (sortOptions != null)
+                        {
+                            @foreach (var opt in sortOptions)
+                            {
+                                <option value="@opt.Id" selected="@(filter?.SortBy == opt.Id)">
+                                    @opt.Name
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Products List -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        @if (products != null && products.Data.Any())
+        {
+            @foreach (var product in products.Data)
+            {
+                <div class="row border-bottom pb-3 mb-3 product-item" data-id="@product.Id">
+                    <!-- Image -->
+                    <div class="col-md-2">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Title" class="img-fluid rounded" 
+                                 style="width: 100%; height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 100%; height: 150px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Info -->
+                    <div class="col-md-6">
+                        <h5 class="mb-2">@product.Title</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-tag"></i> <strong>Danh mục:</strong> @product.CategoryName<br>
+                            <i class="fas fa-map-marker-alt"></i> <strong>Địa điểm:</strong> @product.Location<br>
+                            <i class="fas fa-box"></i> <strong>Tình trạng:</strong> @product.Condition<br>
+                            <i class="fas fa-clock"></i> <strong>Ngày đăng:</strong> @product.CreateAt.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                        <p class="mb-2">
+                            @if (!string.IsNullOrEmpty(product.Description))
+                            {
+                                @(product.Description.Length > 150 
+                                    ? product.Description.Substring(0, 150) + "..." 
+                                    : product.Description)
+                            }
+                        </p>
+
+                        <span class="badge bg-info">@product.Status</span>
+
+                        @* AI moderation result *@
+                        @if (!string.IsNullOrEmpty(product.Flag) && product.Flag != "None")
+                        {
+                            var flagLabel = product.Flag switch
+                            {
+                                "SexualContent" => "Nội dung nhạy cảm",
+                                "Violence" => "Bạo lực",
+                                "HateSpeech" => "Ngôn từ thù ghét",
+                                "IllegalGoods" => "Hàng hóa bất hợp pháp",
+                                _ => product.Flag
+                            };
+
+                            <div class="mt-2">
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-robot"></i> Cảnh báo AI: @flagLabel
+                                </span>
+                                @if (!string.IsNullOrEmpty(product.WarningDetail))
+                                {
+                                    <div class="small text-danger mt-1">
+                                        <i class="fas fa-exclamation-triangle"></i> @product.WarningDetail
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(product.Flag) && product.Flag == "None")
+                        {
+                            <div class="mt-2 small text-muted">
+                                <i class="fas fa-robot"></i> Đã kiểm thử tự động bởi AI: Không phát hiện vi phạm.
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Seller & Price -->
+                    <div class="col-md-2 text-center">
+                        <h4 class="text-success mb-2">@product.Price.ToString("N0") ₫</h4>
+                        <hr>
+                        @if (product.Seller != null)
+                        {
+                            <p class="mb-1">
+                                <i class="fas fa-user"></i> <strong>@product.Seller.DisplayName</strong>
+                            </p>
+                            @if (!string.IsNullOrEmpty(product.Seller.PhoneNumber))
+                            {
+                                <p class="text-muted small">@product.Seller.PhoneNumber</p>
+                            }
+                        }
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-md-2">
+                        @if (currentTab == "Pending")
+                        {
+                            <button class="btn btn-success w-100 mb-2 btn-approve" data-id="@product.Id">
+                                <i class="fas fa-check"></i> Duyệt
+                            </button>
+                            <button class="btn btn-danger w-100 mb-2 btn-reject" data-id="@product.Id">
+                                <i class="fas fa-times"></i> Từ chối
+                            </button>
+                        }
+                        else if (currentTab == "Approved")
+                        {
+                            <button class="btn btn-warning w-100 mb-2 btn-reject" data-id="@product.Id">
+                                <i class="fas fa-ban"></i> Gỡ bài
+                            </button>
+                        }
+                        <a href="@Url.Action("Details", "Product", new { id = product.Id })" 
+                           class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-eye"></i> Chi tiết
+                        </a>
+                        <button class="btn btn-outline-danger w-100 btn-delete" data-id="@product.Id">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <!-- Pagination -->
+            @if (products.TotalPages > 1)
+            {
+                <nav aria-label="Product pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(!products.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" href="?PageNumber=@(products.PageNumber - 1)&Search=@filter?.Search&CategoryId=@filter?.CategoryId&SortBy=@filter?.SortBy">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= products.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == products.PageNumber ? "active" : "")">
+                                <a class="page-link" href="?PageNumber=@i&Search=@filter?.Search&CategoryId=@filter?.CategoryId&SortBy=@filter?.SortBy">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(!products.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" href="?PageNumber=@(products.PageNumber + 1)&Search=@filter?.Search&CategoryId=@filter?.CategoryId&SortBy=@filter?.SortBy">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="text-center text-muted">
+                    <small>
+                        Hiển thị @((products.PageNumber - 1) * products.PageSize + 1) 
+                        - @(Math.Min(products.PageNumber * products.PageSize, products.TotalCount))
+                        trong tổng số @products.TotalCount bài đăng
+                    </small>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Không có bài đăng nào</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    (function() {
+        console.log('Post management script loaded');
+        
+        // Approve product
+        const approveBtns = document.querySelectorAll('.btn-approve');
+        console.log('Found approve buttons:', approveBtns.length);
+        
+        approveBtns.forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                console.log('Approve button clicked for ID:', id);
+                
+                if (!confirm('Bạn có chắc muốn duyệt bài đăng này?')) {
+                    console.log('User cancelled');
+                    return;
+                }
+                
+                const note = prompt('Ghi chú (không bắt buộc):');
+                console.log('Note:', note);
+                
+                try {
+                    console.log('Sending request to:', `/Post/Approve/${id}`);
+                    const response = await fetch(`/Post/Approve/${id}`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ note })
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    const result = await response.json();
+                    console.log('Result:', result);
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra! Xem console để biết chi tiết.');
+                }
+            });
+        });
+
+        // Reject product
+        const rejectBtns = document.querySelectorAll('.btn-reject');
+        console.log('Found reject buttons:', rejectBtns.length);
+        
+        rejectBtns.forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                console.log('Reject button clicked for ID:', id);
+                
+                const reason = prompt('Nhập lý do từ chối (bắt buộc):');
+                if (!reason || !reason.trim()) {
+                    alert('Vui lòng nhập lý do từ chối!');
+                    return;
+                }
+                
+                try {
+                    console.log('Sending request to:', `/Post/Reject/${id}`);
+                    const response = await fetch(`/Post/Reject/${id}`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason })
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    const result = await response.json();
+                    console.log('Result:', result);
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra! Xem console để biết chi tiết.');
+                }
+            });
+        });
+
+        // Delete product
+        const deleteBtns = document.querySelectorAll('.btn-delete');
+        console.log('Found delete buttons:', deleteBtns.length);
+        
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                console.log('Delete button clicked for ID:', id);
+                
+                const reason = prompt('Nhập lý do xóa (bắt buộc):');
+                if (!reason || !reason.trim()) {
+                    alert('Vui lòng nhập lý do xóa!');
+                    return;
+                }
+                
+                if (!confirm('Bạn có chắc chắn muốn XÓA bài đăng này?')) return;
+                
+                try {
+                    console.log('Sending request to:', `/Post/Delete/${id}`);
+                    const response = await fetch(`/Post/Delete/${id}`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason })
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    const result = await response.json();
+                    console.log('Result:', result);
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra! Xem console để biết chi tiết.');
+                }
+            });
+        });
+    })();
+</script>

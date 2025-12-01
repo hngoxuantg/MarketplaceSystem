@@ -1,0 +1,196 @@
+﻿@model MarketplaceSystem.Web.UI.Models.ViewModels.Pages.HomePageViewModel
+@{
+    ViewBag.Title = "Chợ Tốt - Mua bán nhanh";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/components/search-filter.css" />
+    <link rel="stylesheet" href="~/css/components/product-list.css" />
+    <link rel="stylesheet" href="~/css/components/pagination.css" />
+    <link rel="stylesheet" href="~/css/pages/home.css" />
+}
+
+<!-- Search Filter Component -->
+@await Component.InvokeAsync("SearchFilter", Model)
+
+<section id="categories" class="categories-section" aria-label="Danh mục nổi bật">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Khám phá theo danh mục</h2>
+            <p class="section-subtitle">Chọn nhanh danh mục bạn quan tâm</p>
+        </div>
+        <div class="categories-grid">
+            @if (Model.RootCategories?.Items != null)
+            {
+                @foreach (var category in Model.RootCategories.Items)
+                {
+                    <div class="category-card" onclick="window.location.href='@Url.Action("Create", "Post", new { categoryId = category.Id })'" role="button" tabindex="0" aria-label="@category.Name">
+                        <div class="category-icon">
+                            <img src="@category.Icon" alt="@category.Name" />
+                        </div>
+                        <h3 class="category-name">@category.Name</h3>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section id="products" class="products-section" aria-label="Sản phẩm đề xuất">
+    <div class="container">
+        <!-- Product Tabs -->
+        <div class="product-tabs" role="tablist">
+            <div class="product-tab active" role="tab" aria-selected="true">Dành cho bạn</div>
+            <div class="product-tab" role="tab" aria-selected="false">Mới nhất</div>
+            <div class="product-tab" role="tab" aria-selected="false">Video</div>
+        </div>
+
+        <!-- Products Grid - Sử dụng ViewComponent -->
+        @if (Model.Products != null)
+        {
+            @await Component.InvokeAsync("ProductList", Model.Products)
+        }
+
+        <!-- Pagination - Sử dụng ViewComponent -->
+        @if (Model.Products != null)
+        {
+            @await Component.InvokeAsync("Pagination", Model.Products)
+        }
+    </div>
+</section>
+
+<!-- Login Prompt removed per request -->
+
+@section Scripts {
+    <script>
+        // Dropdown interactions for search filters
+        (function() {
+            const dropdowns = document.querySelectorAll('.search-dropdown');
+
+            function closeAll(except) {
+                dropdowns.forEach(d => {
+                    if (d !== except) {
+                        d.classList.remove('open');
+                        const trigger = d.querySelector('.search-dropdown__trigger');
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                const dd = e.target.closest('.search-dropdown');
+                if (!dd) {
+                    closeAll();
+                    return;
+                }
+                if (e.target.closest('.search-dropdown__trigger')) {
+                    const isOpen = dd.classList.contains('open');
+                    closeAll();
+                    dd.classList.toggle('open', !isOpen);
+                    dd.querySelector('.search-dropdown__trigger').setAttribute('aria-expanded', String(!isOpen));
+                }
+                const item = e.target.closest('.search-dropdown__item');
+                if (item) {
+                    const value = item.getAttribute('data-value') || '';
+                    const label = item.textContent.trim();
+                    const input = dd.querySelector('input[type="hidden"]');
+                    const labelEl = dd.querySelector('.search-dropdown__label');
+                    if (input) input.value = value;
+                    if (labelEl) labelEl.textContent = label || labelEl.getAttribute('data-placeholder');
+                    dd.classList.remove('open');
+                    dd.querySelector('.search-dropdown__trigger').setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeAll();
+            });
+        })();
+
+        // Toggle favorite
+        function toggleFavorite(btn, productId) {
+            btn.querySelector('i').classList.toggle('far');
+            btn.querySelector('i').classList.toggle('fas');
+            btn.classList.toggle('active');
+
+            // Get current favorites from localStorage
+            const favorites = window.storage.get('favoriteProducts') || [];
+
+            if (btn.classList.contains('active')) {
+                // Add to favorites
+                if (!favorites.includes(productId)) {
+                    favorites.push(productId);
+                    window.storage.set('favoriteProducts', favorites);
+                }
+                showToast('Đã thêm vào yêu thích', 'success');
+            } else {
+                // Remove from favorites
+                const index = favorites.indexOf(productId);
+                if (index > -1) {
+                    favorites.splice(index, 1);
+                    window.storage.set('favoriteProducts', favorites);
+                }
+                showToast('Đã xóa khỏi yêu thích', 'info');
+            }
+        }
+
+        // Load favorite states on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const favorites = window.storage.get('favoriteProducts') || [];
+            const favoriteButtons = document.querySelectorAll('.btn-favorite');
+            
+            favoriteButtons.forEach(btn => {
+                const productCard = btn.closest('.product-card');
+                if (productCard) {
+                    const productIdMatch = productCard.getAttribute('onclick')?.match(/(\d+)/);
+                    if (productIdMatch) {
+                        const productId = parseInt(productIdMatch[1]);
+                        if (favorites.includes(productId)) {
+                            btn.classList.add('active');
+                            btn.querySelector('i')?.classList.replace('far', 'fas');
+                        }
+                    }
+                }
+            });
+        });
+
+        // Product tabs functionality
+        document.querySelectorAll('.product-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.product-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                showToast('Đang tải ' + this.textContent.trim() + '...', 'info');
+                // TODO: Load products by tab
+            });
+        });
+
+        // Smooth scroll to products when searching or changing page
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasSearch = urlParams.get('Search');
+            const hasCategory = urlParams.get('CategoryId');
+            const hasLocation = urlParams.get('Location');
+            const hasPageNumber = urlParams.get('PageNumber');
+            
+            // Nếu có bất kỳ filter hoặc pagination nào, scroll xuống products
+            if (hasSearch || hasCategory || hasLocation || hasPageNumber) {
+                setTimeout(() => {
+                    document.getElementById('products')?.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 100);
+            }
+        });
+
+        // Submit form khi enter trong search input
+        document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm')?.submit();
+            }
+        });
+    </script>
+}

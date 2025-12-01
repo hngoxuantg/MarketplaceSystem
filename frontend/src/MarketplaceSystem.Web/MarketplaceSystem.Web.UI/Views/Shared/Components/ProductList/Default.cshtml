@@ -1,0 +1,30 @@
+@model MarketplaceSystem.Web.UI.Models.ViewModels.Product.ProductListViewModel
+
+<div class="products-grid" id="productList">
+    @foreach(var product in Model.Items)
+    {
+        var isNew = (DateTime.UtcNow - product.CreatedAt).TotalDays <= 3;
+        <div class="product-card" role="article" onclick="window.location.href='@Url.Action("Detail", "Product", new { id = product.Id })'">
+            <div class="product-image">
+                @if (isNew)
+                {
+                    <span class="product-badge">Mới</span>
+                }
+                <img src="@product.ImageUrlOrDefault" alt="@product.Title" loading="lazy" />
+                <button class="btn-favorite" aria-label="Thêm vào yêu thích" title="Yêu thích" onclick="event.stopPropagation(); toggleFavorite(this, @product.Id)">
+                    <i class="far fa-heart" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="product-info">
+                <h3 class="product-title" title="@product.Title">@product.Title</h3>
+                <p class="product-price">@product.FormattedPrice</p>
+                <div class="product-meta">
+                    <span class="product-location" title="@product.Location">
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i> @product.Location
+                    </span>
+                    <span class="product-time">@product.TimeAgo</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>

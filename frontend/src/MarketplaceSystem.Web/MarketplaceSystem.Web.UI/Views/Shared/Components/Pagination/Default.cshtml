@@ -1,0 +1,116 @@
+@model MarketplaceSystem.Web.UI.Models.ViewModels.Product.ProductListViewModel
+
+@{
+    var currentPage = Model.PageNumber;
+    var totalPages = Model.TotalPages;
+    var startPage = Math.Max(1, currentPage - 2);
+    var endPage = Math.Min(totalPages, currentPage + 2);
+    
+    // Lấy filters từ query string để giữ lại khi chuyển trang
+    var search = Context.Request.Query["Search"].ToString();
+    var categoryId = Context.Request.Query["CategoryId"].ToString();
+    var location = Context.Request.Query["Location"].ToString();
+}
+
+<div class="pagination-wrapper">
+    <div class="pagination">
+        
+        <!-- Nút Previous -->
+        @if (Model.HasPreviousPage)
+        {
+            <a href="@Url.Action("Index", "Home", new { 
+                PageNumber = currentPage - 1,
+                PageSize = Model.PageSize,
+                Search = search,
+                CategoryId = categoryId,
+                Location = location
+            })" class="pagination-btn" aria-label="Trang trước">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        }
+        else
+        {
+            <button class="pagination-btn" disabled aria-label="Trang trước">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        }
+
+        <!-- Trang đầu tiên -->
+        @if (startPage > 1)
+        {
+            <a href="@Url.Action("Index", "Home", new { 
+                PageNumber = 1,
+                PageSize = Model.PageSize,
+                Search = search,
+                CategoryId = categoryId,
+                Location = location
+            })" class="pagination-page">1</a>
+            
+            @if (startPage > 2)
+            {
+                <span class="pagination-dots">...</span>
+            }
+        }
+
+        <!-- Các trang ở giữa -->
+        @for (int i = startPage; i <= endPage; i++)
+        {
+            if (i == currentPage)
+            {
+                <span class="pagination-page active">@i</span>
+            }
+            else
+            {
+                <a href="@Url.Action("Index", "Home", new { 
+                    PageNumber = i,
+                    PageSize = Model.PageSize,
+                    Search = search,
+                    CategoryId = categoryId,
+                    Location = location
+                })" class="pagination-page">@i</a>
+            }
+        }
+
+        <!-- Trang cuối cùng -->
+        @if (endPage < totalPages)
+        {
+            @if (endPage < totalPages - 1)
+            {
+                <span class="pagination-dots">...</span>
+            }
+            
+            <a href="@Url.Action("Index", "Home", new { 
+                PageNumber = totalPages,
+                PageSize = Model.PageSize,
+                Search = search,
+                CategoryId = categoryId,
+                Location = location
+            })" class="pagination-page">@totalPages</a>
+        }
+
+        <!-- Nút Next -->
+        @if (Model.HasNextPage)
+        {
+            <a href="@Url.Action("Index", "Home", new { 
+                PageNumber = currentPage + 1,
+                PageSize = Model.PageSize,
+                Search = search,
+                CategoryId = categoryId,
+                Location = location
+            })" class="pagination-btn" aria-label="Trang sau">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        }
+        else
+        {
+            <button class="pagination-btn" disabled aria-label="Trang sau">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        }
+    </div>
+    
+    <!-- Thông tin phân trang -->
+    <span class="pagination-info">
+        Hiển thị @((currentPage - 1) * Model.PageSize + 1) - @(Math.Min(currentPage * Model.PageSize, Model.TotalCount)) trong tổng số @Model.TotalCount sản phẩm
+    </span>
+</div>

@@ -1,0 +1,811 @@
+@{
+    ViewData["Title"] = "Giới thiệu Chợ Tốt";
+}
+
+@section Styles {
+    <style>
+        .about-hero {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%);
+            padding: 120px 0 80px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @@keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .about-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-title {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            letter-spacing: -1.5px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .about-subtitle {
+            font-size: 22px;
+            font-weight: 400;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.7;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .about-container {
+            max-width: 1100px;
+            margin: -40px auto 60px;
+            padding: 0 20px;
+        }
+
+        .about-main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 70px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            animation: fadeInScale 0.8s ease-out 0.4s both;
+        }
+
+        @@keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .about-intro {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #1a1a1a;
+            margin-bottom: 40px;
+        }
+
+        .about-intro strong {
+            color: #FFCE3D;
+            font-weight: 700;
+        }
+
+        .about-section {
+            margin-bottom: 50px;
+        }
+
+        .about-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #FFCE3D;
+            font-size: 28px;
+        }
+
+        .section-description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 24px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+            border-radius: 20px;
+            padding: 36px 28px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 206, 61, 0.1) 0%, rgba(255, 184, 0, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 16px 40px rgba(255, 206, 61, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #FFCE3D;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 206, 61, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 15px 40px rgba(255, 106, 53, 0.5);
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #6b7280;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            border-radius: 32px;
+            padding: 70px;
+            margin: 50px 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 206, 61, 0.05) 0%, transparent 70%);
+            animation: rotateGlow 15s linear infinite;
+        }
+
+        @@keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -2px;
+            text-shadow: 0 4px 20px rgba(255, 206, 61, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .value-card {
+            background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 32px;
+            border-left: 5px solid transparent;
+            border-image: linear-gradient(to bottom, #FFD700, #FFA500, #FF6B35) 1;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #FFD700, #FFA500, #FF6B35);
+            transition: width 0.4s ease;
+        }
+
+        .value-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 12px 32px rgba(255, 206, 61, 0.2);
+        }
+
+        .value-card:hover::before {
+            width: 100%;
+            opacity: 0.05;
+        }
+
+        .value-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .value-title i {
+            color: #FFCE3D;
+        }
+
+        .value-description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+
+        .mission-box {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%);
+            border-radius: 28px;
+            padding: 56px;
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(255, 106, 53, 0.4), 0 0 100px rgba(255, 215, 0, 0.3);
+        }
+
+        .mission-box::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @@keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .mission-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .mission-text {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.6;
+            margin: 0;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+            border-radius: 24px;
+            padding: 60px;
+            text-align: center;
+            border: 2px solid #f0f0f0;
+        }
+
+        .cta-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .cta-description {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .btn-cta {
+            padding: 16px 48px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cta-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B35 100%);
+            background-size: 200% auto;
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 106, 53, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cta-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-cta-primary:hover {
+            background-position: right center;
+            box-shadow: 0 12px 32px rgba(255, 106, 53, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .btn-cta-primary:hover::before {
+            opacity: 1;
+        }
+
+        .btn-cta-secondary {
+            background: white;
+            color: #1a1a1a;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-cta-secondary:hover {
+            border-color: #FFCE3D;
+            background: #fafafa;
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .about-main-card {
+                padding: 40px 32px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 32px;
+            }
+
+            .about-title {
+                font-size: 36px;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .about-hero {
+                padding: 60px 0 40px;
+            }
+
+            .about-title {
+                font-size: 32px;
+            }
+
+            .about-subtitle {
+                font-size: 16px;
+            }
+
+            .about-main-card {
+                padding: 32px 24px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .features-grid,
+            .values-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-section {
+                padding: 40px 24px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn-cta {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode .about-hero {
+            background: linear-gradient(135deg, #d4a017 0%, #d68910 50%, #c85a28 100%);
+        }
+
+        body.dark-mode .about-main-card {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .about-intro {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .about-intro strong {
+            color: #FFD700;
+        }
+
+        body.dark-mode .about-intro a {
+            color: #FFD700;
+        }
+
+        body.dark-mode .section-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .section-description {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .feature-card {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .feature-card::before {
+            background: linear-gradient(135deg, rgba(255, 206, 61, 0.15) 0%, rgba(255, 184, 0, 0.15) 100%);
+        }
+
+        body.dark-mode .feature-card:hover {
+            border-color: #FFD700;
+            box-shadow: 0 16px 40px rgba(255, 215, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .feature-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .feature-description {
+            color: #a0a0a0;
+        }
+
+        body.dark-mode .stats-section {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        body.dark-mode .value-card {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+        }
+
+        body.dark-mode .value-card:hover {
+            box-shadow: 0 12px 32px rgba(255, 206, 61, 0.3);
+        }
+
+        body.dark-mode .value-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .value-description {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .mission-box {
+            background: linear-gradient(135deg, #d4a017 0%, #d68910 50%, #c85a28 100%);
+            box-shadow: 0 20px 60px rgba(212, 160, 23, 0.4), 0 0 100px rgba(255, 215, 0, 0.2);
+        }
+
+        body.dark-mode .cta-section {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .cta-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .cta-description {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .btn-cta-secondary {
+            background: #2a2a2a;
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .btn-cta-secondary:hover {
+            border-color: #FFD700;
+            background: #1e1e1e;
+        }
+    </style>
+}
+
+<div class="about-hero">
+    <div class="about-hero-content">
+        <h1 class="about-title">Giới thiệu Chợ Tốt</h1>
+        <p class="about-subtitle">
+            Mục tiêu của Chợ Tốt là sẽ trở thành thị trường mua bán trực tuyến hàng đầu Việt Nam. 
+            Mục đích của Chợ Tốt là cung cho người mua và người bán kết nối và giao dịch an toàn, dễ dàng trong một môi trường tiện lợi và rõ ràng.
+        </p>
+    </div>
+</div>
+
+<div class="about-container">
+    <div class="about-main-card">
+        <!-- Introduction -->
+        <div class="about-intro">
+            Tất cả các hàng mục đều có sẵn trên trang của chúng tôi, cho dù nó là dành cho mua, bán, tìm kiếm nhà cửa, xe ô tô, tuyển dụng, đồ điện tử đã qua sử dụng, vật nuôi, và cả dịch vụ gia đình. Liên hệ của người bán là công khai cho người mua, do đó người mua có thể dễ dàng liên lạc với người bán thông qua thị trường mua bán trực tuyến này.
+            <br><br>
+            Mỗi người trong số chúng ta đều có những sản phẩm có thể bán được. Bên cạnh việc giúp sản phẩm không cần đến và có thể kiếm thêm tiền bằng cách bán nó cho người khác thông qua thị trường mua bán trực tuyến này.
+            <br><br>
+            <strong>Sản phẩm mà bạn không cần đến vẫn có thể trở thành vật quý giá với người khác.</strong> Đừng do dự mà hãy gửi thông tin về sản phẩm của bạn ngay bây giờ!
+            <br><br>
+            Nếu bạn có bất kỳ câu hỏi nào liên quan đến quảng cáo của bạn, xin vui lòng xem các nguyên tắc và quy định dành cho quảng cáo trực tuyến trên trang của chúng tôi. Bạn cũng có thể xem qua <a href="@Url.Action("Index", "Home")" style="color: #FFCE3D; font-weight: 600;">Trung tâm trợ giúp</a> khách hàng để liên hệ với chúng tôi.
+        </div>
+
+        <!-- Mission -->
+        <div class="about-section">
+            <h2 class="section-title">
+                <i class="fas fa-bullseye"></i>
+                Sứ mệnh của chúng tôi
+            </h2>
+            <div class="mission-box">
+                <div class="mission-icon">🎯</div>
+                <p class="mission-text">
+                    "Giúp mọi người mua và bán dễ dàng, an toàn và tiện lợi hơn trong một môi trường đáng tin cậy"
+                </p>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="about-section">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i>
+                Tại sao chọn Chợ Tốt?
+            </h2>
+            <p class="section-description">
+                Chúng tôi cung cấp một nền tảng hoàn hảo để kết nối người mua và người bán với nhiều tính năng vượt trội.
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-check"></i>
+                    </div>
+                    <h3 class="feature-title">An toàn & Bảo mật</h3>
+                    <p class="feature-description">
+                        Hệ thống xác thực người dùng và kiểm duyệt tin đăng nghiêm ngặt, đảm bảo môi trường giao dịch an toàn
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">Nhanh chóng & Tiện lợi</h3>
+                    <p class="feature-description">
+                        Đăng tin chỉ trong vài phút, tìm kiếm dễ dàng với bộ lọc thông minh và giao diện thân thiện
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Hiệu quả cao</h3>
+                    <p class="feature-description">
+                        Tiếp cận hàng triệu người mua tiềm năng trên toàn quốc, tăng cơ hội bán hàng thành công
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-dollar"></i>
+                    </div>
+                    <h3 class="feature-title">Miễn phí đăng tin</h3>
+                    <p class="feature-description">
+                        Đăng tin mua bán hoàn toàn miễn phí, không giới hạn số lượng, tiết kiệm chi phí tối đa
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="feature-title">Hỗ trợ 24/7</h3>
+                    <p class="feature-description">
+                        Đội ngũ chăm sóc khách hàng luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi qua nhiều kênh
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Phủ sóng toàn quốc</h3>
+                    <p class="feature-description">
+                        Kết nối mua bán trên khắp 63 tỉnh thành Việt Nam, mở rộng cơ hội kinh doanh
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-section">
+            <h2 class="section-title" style="color: white; justify-content: center;">
+                <i class="fas fa-chart-bar"></i>
+                Chợ Tốt trong con số
+            </h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">5M+</div>
+                    <div class="stat-label">Người dùng</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10M+</div>
+                    <div class="stat-label">Tin đăng</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">63</div>
+                    <div class="stat-label">Tỉnh thành</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Hài lòng</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Values -->
+        <div class="about-section">
+            <h2 class="section-title">
+                <i class="fas fa-gem"></i>
+                Giá trị cốt lõi
+            </h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <h3 class="value-title">
+                        <i class="fas fa-users"></i>
+                        Khách hàng là trung tâm
+                    </h3>
+                    <p class="value-description">
+                        Chúng tôi luôn đặt lợi ích và trải nghiệm của khách hàng lên hàng đầu trong mọi quyết định và hành động.
+                    </p>
+                </div>
+                <div class="value-card">
+                    <h3 class="value-title">
+                        <i class="fas fa-handshake"></i>
+                        Minh bạch & Tin cậy
+                    </h3>
+                    <p class="value-description">
+                        Xây dựng niềm tin thông qua sự minh bạch trong giao dịch và cam kết bảo vệ quyền lợi người dùng.
+                    </p>
+                </div>
+                <div class="value-card">
+                    <h3 class="value-title">
+                        <i class="fas fa-rocket"></i>
+                        Đổi mới không ngừng
+                    </h3>
+                    <p class="value-description">
+                        Liên tục cải tiến công nghệ và dịch vụ để mang đến trải nghiệm mua bán tốt nhất cho người dùng.
+                    </p>
+                </div>
+                <div class="value-card">
+                    <h3 class="value-title">
+                        <i class="fas fa-leaf"></i>
+                        Phát triển bền vững
+                    </h3>
+                    <p class="value-description">
+                        Khuyến khích tái sử dụng sản phẩm, góp phần bảo vệ môi trường và xây dựng cộng đồng bền vững.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <h2 class="cta-title">Bắt đầu mua bán ngay hôm nay!</h2>
+            <p class="cta-description">
+                Tham gia cộng đồng hàng triệu người dùng đang tin tưởng và sử dụng Chợ Tốt mỗi ngày
+            </p>
+            <div class="cta-buttons">
+                <a href="@Url.Action("Create", "Post")" class="btn-cta btn-cta-primary">
+                    <i class="fas fa-plus-circle"></i>
+                    Đăng tin ngay
+                </a>
+                <a href="@Url.Action("Index", "Home")" class="btn-cta btn-cta-secondary">
+                    <i class="fas fa-search"></i>
+                    Khám phá sản phẩm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

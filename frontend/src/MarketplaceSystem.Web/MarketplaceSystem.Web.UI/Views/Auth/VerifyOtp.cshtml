@@ -1,0 +1,172 @@
+﻿@using MarketplaceSystem.Web.UI.Models.ViewModels.Auth
+@model VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+
+<div class="auth-container">
+    <div class="auth-wrapper verify-otp-wrapper">
+        <!-- Centered OTP Verification Form -->
+        <div class="auth-form-container mx-auto">
+            <div class="auth-form-wrapper">
+                <div class="auth-header">
+                    <div class="otp-icon mb-4">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h2 class="auth-title">Xác thực Email</h2>
+                    <p class="auth-subtitle">
+                        Chúng tôi đã gửi mã OTP đến email của bạn.<br>
+                        Vui lòng kiểm tra và nhập mã để tiếp tục.
+                    </p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        @ViewBag.Error
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="VerifyOtp" method="post" class="auth-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-5">
+                        <label asp-for="Otp" class="form-label text-center d-block mb-3">
+                            <i class="fas fa-key"></i>
+                            Mã OTP (6 chữ số)
+                        </label>
+                        <input asp-for="Otp" 
+                               class="form-control form-control-lg text-center otp-input" 
+                               placeholder="000000"
+                               maxlength="6"
+                               autocomplete="one-time-code" />
+                        <span asp-validation-for="Otp" class="text-danger small d-block text-center mt-3"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Xác thực
+                    </button>
+
+                    <div class="text-center mb-4">
+                        <p class="text-muted mb-3">Không nhận được mã?</p>
+                        <button type="button" class="btn btn-link" id="resendBtn" onclick="resendOtp()">
+                            <i class="fas fa-redo me-2"></i>
+                            Gửi lại mã OTP
+                        </button>
+                        <p class="mt-2">
+                            <span id="countdown"></span>
+                        </p>
+                    </div>
+
+                    <div class="auth-footer text-center">
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Quay lại đăng nhập
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        let countdown = 60;
+        let timer;
+
+        function startCountdown() {
+            const resendBtn = document.getElementById('resendBtn');
+            const countdownElement = document.getElementById('countdown');
+            resendBtn.disabled = true;
+            resendBtn.style.opacity = '0.5';
+            resendBtn.style.cursor = 'not-allowed';
+            
+            timer = setInterval(function() {
+                if (countdown > 0) {
+                    countdown--;
+                    countdownElement.innerHTML = `<span style="color: #FFCE3D; font-weight: 700;">Gửi lại sau ${countdown}s</span>`;
+                } else {
+                    clearInterval(timer);
+                    resendBtn.disabled = false;
+                    resendBtn.style.opacity = '1';
+                    resendBtn.style.cursor = 'pointer';
+                    countdownElement.textContent = '';
+                    countdown = 60;
+                }
+            }, 1000);
+        }
+
+        function resendOtp() {
+            // Show loading state
+            const resendBtn = document.getElementById('resendBtn');
+            const originalHtml = resendBtn.innerHTML;
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+            resendBtn.disabled = true;
+
+            // Call API to resend OTP
+            fetch('@Url.Action("ResendOtp", "Auth")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Mã OTP đã được gửi lại!', 'success');
+                    startCountdown();
+                } else {
+                    showToast(data.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại!', 'error');
+                    resendBtn.innerHTML = originalHtml;
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Đã xảy ra lỗi. Vui lòng thử lại!', 'error');
+                resendBtn.innerHTML = originalHtml;
+                resendBtn.disabled = false;
+            });
+        }
+
+        // Auto format OTP input - only numbers
+        const otpInput = document.querySelector('.otp-input');
+        otpInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Auto submit when 6 digits entered
+            if (this.value.length === 6) {
+                // Optional: auto submit form
+                // document.querySelector('.auth-form').submit();
+            }
+        });
+
+        // Prevent paste of non-numeric characters
+        otpInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const numericText = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
+            this.value = numericText;
+        });
+
+        // Form submission handling
+        document.querySelector('.auth-form').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xác thực...';
+        });
+
+        // Start countdown on page load
+        window.addEventListener('load', function() {
+            startCountdown();
+        });
+    </script>
+}

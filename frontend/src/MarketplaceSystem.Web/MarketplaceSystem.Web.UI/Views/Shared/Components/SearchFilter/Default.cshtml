@@ -1,0 +1,132 @@
+@model MarketplaceSystem.Web.UI.Models.ViewModels.Pages.HomePageViewModel
+
+<!-- Hero Section -->
+<section id="hero" class="hero-section" aria-label="Hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">Khám phá sản phẩm phù hợp cho bạn</h1>
+            <p class="hero-subtitle">Tìm kiếm nhanh theo danh mục và khu vực</p>
+        </div>
+        
+        <!-- Search Form -->
+        <form method="get" asp-controller="Home" asp-action="Index" class="search-form" aria-label="Tìm kiếm sản phẩm" id="searchForm">
+            <!-- Category Dropdown -->
+            <div class="search-dropdown" data-role="dropdown" data-target="category">
+                <input type="hidden" name="CategoryId" id="categoryFilter" value="@Context.Request.Query["CategoryId"]" />
+                <button type="button" class="search-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="categoryDropdownMenu">
+                    <span class="search-dropdown__label" data-placeholder="Tất cả danh mục" id="categoryLabel">
+                        @{
+                            var selectedCategoryId = Context.Request.Query["CategoryId"].ToString();
+                            if (!string.IsNullOrEmpty(selectedCategoryId) && Model.RootCategories?.Items != null)
+                            {
+                                var selectedCategory = Model.RootCategories.Items.FirstOrDefault(c => c.Id.ToString() == selectedCategoryId);
+                                @(selectedCategory?.Name ?? "Tất cả danh mục")
+                            }
+                            else
+                            {
+                                @:Tất cả danh mục
+                            }
+                        }
+                    </span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="search-dropdown__menu" id="categoryDropdownMenu" role="listbox">
+                    <button type="button" class="search-dropdown__item" role="option" data-value="" aria-selected="@(string.IsNullOrEmpty(selectedCategoryId) ? "true" : "false")">Tất cả danh mục</button>
+                    @if (Model.RootCategories?.Items != null)
+                    {
+                        @foreach (var category in Model.RootCategories.Items)
+                        {
+                            <button type="button" class="search-dropdown__item" role="option" data-value="@category.Id" aria-selected="@(selectedCategoryId == category.Id.ToString() ? "true" : "false")">@category.Name</button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Search Input -->
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                <input type="text" name="Search" id="searchInput" placeholder="Tìm sản phẩm..." aria-label="Từ khóa tìm kiếm" value="@Context.Request.Query["Search"]" />
+            </div>
+
+            <!-- Location Dropdown -->
+            <div class="search-dropdown" data-role="dropdown" data-target="location">
+                <input type="hidden" name="Location" id="locationFilter" value="@Context.Request.Query["Location"]" />
+                <button type="button" class="search-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="locationDropdownMenu">
+                    <span class="search-dropdown__label" data-placeholder="Chọn khu vực" id="locationLabel">
+                        @{
+                            var selectedLocationId = Context.Request.Query["Location"].ToString();
+                            if (!string.IsNullOrEmpty(selectedLocationId) && Model.Locations != null)
+                            {
+                                var selectedLocation = Model.Locations.FirstOrDefault(l => l.Id.ToString() == selectedLocationId);
+                                @(selectedLocation?.Name ?? "Chọn khu vực")
+                            }
+                            else
+                            {
+                                @:Chọn khu vực
+                            }
+                        }
+                    </span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="search-dropdown__menu" id="locationDropdownMenu" role="listbox">
+                    <button type="button" class="search-dropdown__item" role="option" data-value="" aria-selected="@(string.IsNullOrEmpty(selectedLocationId) ? "true" : "false")">Chọn khu vực</button>
+                    @if (Model.Locations != null)
+                    {
+                        @foreach (var location in Model.Locations)
+                        {
+                            <button type="button" class="search-dropdown__item" role="option" data-value="@location.Id" aria-selected="@(selectedLocationId == location.Id.ToString() ? "true" : "false")">@location.Name</button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <button type="submit" class="search-btn" aria-label="Thực hiện tìm kiếm">Tìm kiếm</button>
+        </form>
+
+        <!-- Active Filters -->
+        @{
+            var hasActiveFilters = !string.IsNullOrEmpty(Context.Request.Query["Search"]) ||
+                                   !string.IsNullOrEmpty(Context.Request.Query["CategoryId"]) ||
+                                   !string.IsNullOrEmpty(Context.Request.Query["Location"]);
+        }
+
+        @if (hasActiveFilters)
+        {
+            <div class="active-filters">
+                <span class="filter-label">Đang lọc:</span>
+                @if (!string.IsNullOrEmpty(Context.Request.Query["Search"]))
+                {
+                    <span class="filter-tag">
+                        <i class="fas fa-search"></i> "@Context.Request.Query["Search"]"
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(Context.Request.Query["CategoryId"]) && Model.RootCategories?.Items != null)
+                {
+                    var catId = Context.Request.Query["CategoryId"].ToString();
+                    var cat = Model.RootCategories.Items.FirstOrDefault(c => c.Id.ToString() == catId);
+                    if (cat != null)
+                    {
+                        <span class="filter-tag">
+                            <i class="fas fa-folder"></i> @cat.Name
+                        </span>
+                    }
+                }
+                @if (!string.IsNullOrEmpty(Context.Request.Query["Location"]) && Model.Locations != null)
+                {
+                    var locId = Context.Request.Query["Location"].ToString();
+                    var loc = Model.Locations.FirstOrDefault(l => l.Id.ToString() == locId);
+                    if (loc != null)
+                    {
+                        <span class="filter-tag">
+                            <i class="fas fa-map-marker-alt"></i> @loc.Name
+                        </span>
+                    }
+                }
+                <a href="@Url.Action("Index", "Home")" class="clear-filters">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </a>
+            </div>
+        }
+    </div>
+</section>
