@@ -145,3 +145,7 @@ dotnet ef database update --project MarketplaceSystem.Infrastructure --startup-p
 
 - **MarketplaceSystem.Web.UI**: User interface
 - **MarketplaceSystem.Web.UI.Admin**: Admin dashboard
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
