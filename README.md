@@ -22,7 +22,6 @@ Clean Architecture with the following layers:
 - JWT Authentication
 - SignalR (Real-time)
 - Swagger/OpenAPI
-- Gemini AI Integration
 
 ## Project Structure
 
@@ -48,7 +47,6 @@ MarketplaceSystem/
 - CRUD products with multiple images
 - Product classification (variants)
 - Category attributes
-- AI-powered product moderation (Gemini AI)
 - Search & filter
 
 ### Chat System
@@ -65,7 +63,6 @@ MarketplaceSystem/
 - **TokenServices**: JWT generation
 - **MailServices**: Email sending
 - **StorageServices**: File storage
-- **GeminiAIServices**: AI product moderation
 
 ## SignalR Hubs
 
@@ -96,9 +93,6 @@ Before running, update `appsettings.json`:
   "EmailSettings": {
     "From": "your_email@gmail.com",
     "Password": "your_app_password"
-  },
-  "GeminiAI": {
-    "ApiKey": "your_google_api_key"
   }
 }
 ```
@@ -129,7 +123,6 @@ dotnet ef database update --project MarketplaceSystem.Infrastructure --startup-p
 - **ConnectionStrings**: Database connection
 - **JwtConfig**: Secret, Issuer, Audience, Expiration
 - **EmailSettings**: SMTP config
-- **GeminiAI**: API key, config
 - **AllowedCors**: CORS origins
 
 ## Docker Services
