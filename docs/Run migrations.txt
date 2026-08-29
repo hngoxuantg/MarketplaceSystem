@@ -1,3 +1,0 @@
-dotnet ef database update --project MarketplaceSystem.Infrastructure --startup-project MarketplaceSystem.API
-
-dotnet ef migrations add Migration_Name --project MarketplaceSystem.Infrastructure --startup-project MarketplaceSystem.API
