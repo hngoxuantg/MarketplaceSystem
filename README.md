@@ -4,9 +4,9 @@ Online marketplace platform.
 
 ## Overview
 
-Clean Architecture với các layers:
+Clean Architecture with the following layers:
 - **API Layer**: REST API, ASP.NET Core 8
-- **Application Layer**: Business logic, CQRS với MediatR
+- **Application Layer**: Business logic, CQRS with MediatR
 - **Domain Layer**: Entities, Enums, Interfaces
 - **Infrastructure Layer**: Database, External Services
 - **Common Layer**: Shared utilities, constants, helpers
@@ -24,11 +24,7 @@ Clean Architecture với các layers:
 - Swagger/OpenAPI
 - Gemini AI Integration
 
-### Frontend
-- ASP.NET Core MVC
-- 2 projects: Web UI (User) + Web UI Admin
-
-## Backend Structure
+## Project Structure
 
 ```
 MarketplaceSystem/
@@ -37,18 +33,19 @@ MarketplaceSystem/
 ├── MarketplaceSystem.Domain/        # Entities, Interfaces
 ├── MarketplaceSystem.Infrastructure/# DbContext, Services, Migrations
 ├── MarketplaceSystem.Common/        # Utilities, Constants
-└── MarketplaceSystem.UnitTest/      # Unit Tests
+├── MarketplaceSystem.UnitTest/      # Unit Tests
+└── MarketplaceSystem.sln
 ```
 
 ## Features
 
 ### Authentication
-- Register/Login với JWT
+- Register/Login with JWT
 - Refresh token
 - Role-based authorization (User, Admin)
 
 ### Product Management
-- CRUD products với multiple images
+- CRUD products with multiple images
 - Product classification (variants)
 - Category attributes
 - AI-powered product moderation (Gemini AI)
@@ -84,7 +81,7 @@ MarketplaceSystem/
 
 ### Configuration
 
-Trước khi chạy, cập nhật `appsettings.json`:
+Before running, update `appsettings.json`:
 
 ```json
 {
@@ -113,7 +110,6 @@ docker-compose up -d
 
 ### Local
 ```bash
-cd backend/src/MarketplaceSystem
 dotnet restore
 dotnet run --project MarketplaceSystem.API
 ```
@@ -140,11 +136,6 @@ dotnet ef database update --project MarketplaceSystem.Infrastructure --startup-p
 
 - **marketplace-api**: Backend API (port 8080)
 - **sqlserver**: SQL Server 2022 (port 1433)
-
-## Frontend
-
-- **MarketplaceSystem.Web.UI**: User interface
-- **MarketplaceSystem.Web.UI.Admin**: Admin dashboard
 
 ## License
 
